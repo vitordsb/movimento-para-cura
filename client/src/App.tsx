@@ -12,7 +12,11 @@ import QuizPage from "./pages/QuizPage";
 import HistoryPage from "./pages/HistoryPage";
 import ExercisesPage from "./pages/ExercisesPage";
 import AdminDashboard from "./pages/AdminDashboard";
+import AnamnesisPage from "./pages/AnamnesisPage";
+import ProfilePage from "./pages/ProfilePage";
+import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
+import UnderConstruction from "./pages/UnderConstruction";
 
 function Router() {
   return (
@@ -23,9 +27,13 @@ function Router() {
 
       {/* Patient routes */}
       <Route path="/dashboard" component={PatientDashboard} />
+      <Route path="/anamnese" component={AnamnesisPage} />
       <Route path="/quiz" component={QuizPage} />
       <Route path="/history" component={HistoryPage} />
       <Route path="/exercises" component={ExercisesPage} />
+      <Route path="/profile" component={ProfilePage} />
+      <Route path="/settings" component={SettingsPage} />
+      <Route path="/em-desenvolvimento" component={UnderConstruction} />
 
       {/* Admin routes */}
       <Route path="/admin" component={AdminDashboard} />

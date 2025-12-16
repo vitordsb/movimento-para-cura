@@ -23,6 +23,8 @@ export const users = mysqlTable("users", {
   passwordHash: varchar("passwordHash", { length: 255 }),
   role: mysqlEnum("role", ["PATIENT", "ONCOLOGIST"]).notNull().default("PATIENT"),
   loginMethod: varchar("loginMethod", { length: 64 }),
+  hasActivePlan: boolean("hasActivePlan").default(false).notNull(),
+  hasCompletedAnamnesis: boolean("hasCompletedAnamnesis").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),

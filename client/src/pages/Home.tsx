@@ -9,7 +9,10 @@ export default function Home() {
 
   useEffect(() => {
     if (!loading && user) {
-      // Route based on user role
+      if (user.role === "PATIENT" && user.hasCompletedAnamnesis === false) {
+        navigate("/anamnese");
+        return;
+      }
       if (user.role === "ONCOLOGIST") {
         navigate("/admin");
       } else if (user.role === "PATIENT") {

@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { AlertCircle, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 
 export default function QuizPage() {
   const { user } = useAuth();
@@ -14,9 +16,18 @@ export default function QuizPage() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const hasActivePlan = Boolean(user?.hasActivePlan);
+  const isKnownPatient = user?.role === "PATIENT" && user.hasCompletedAnamnesis === true;
+  const [showPaywall, setShowPaywall] = useState(false);
 
   // Get active quiz
   const { data: quiz, isLoading: quizLoading } = trpc.quizzes.getActive.useQuery();
+  const utils = trpc.useUtils();
+  const activatePlanMutation = trpc.subscriptions.activate.useMutation({
+    onSuccess: async () => {
+      await utils.auth.me.invalidate();
+    },
+  });
 
   // Submit response mutation
   const submitMutation = trpc.responses.submitDaily.useMutation({
@@ -69,6 +80,7 @@ export default function QuizPage() {
   const currentQuestion = questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
   const isAnswered = answers[currentQuestion?.id] !== undefined;
+  const needsAnamnesis = user?.role === "PATIENT" && user.hasCompletedAnamnesis === false;
 
   const handleAnswer = (value: string) => {
     setAnswers((prev) => ({
@@ -83,6 +95,12 @@ export default function QuizPage() {
       return;
     }
 
+    // Paywall: apenas usuários novos/trial sem plano veem o modal
+    if (!hasActivePlan && !isKnownPatient) {
+      setShowPaywall(true);
+      return;
+    }
+
     const formattedAnswers = questions.map((q) => ({
       questionId: q.id,
       answerValue: answers[q.id],
@@ -93,6 +111,8 @@ export default function QuizPage() {
       answers: formattedAnswers,
     });
   };
+
+  const canSeeResult = hasActivePlan || isKnownPatient;
 
   if (submitted && result) {
     return (
@@ -111,49 +131,81 @@ export default function QuizPage() {
             </CardContent>
           </Card>
 
-          {/* Result Card */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="text-center">
-              <div className="flex justify-center mb-4">
-                {result.isGoodDayForExercise ? (
-                  <div className="text-6xl">💪</div>
-                ) : (
-                  <div className="text-6xl">🌿</div>
-                )}
-              </div>
-              <CardTitle className="text-3xl">
-                {result.isGoodDayForExercise ? "Ótimo dia para se exercitar!" : "Recomendado descansar hoje"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="bg-pink-50 rounded-lg p-6">
-                <p className="text-sm text-gray-600 mb-2">Atividade recomendada</p>
-                <p className="text-2xl font-bold text-pink-600">
-                  {result.recommendedExerciseType}
-                </p>
-              </div>
+          {canSeeResult ? (
+            <Card className="border-0 shadow-lg">
+              <CardHeader className="text-center">
+                <div className="flex justify-center mb-4">
+                  {result.isGoodDayForExercise ? (
+                    <div className="text-6xl">💪</div>
+                  ) : (
+                    <div className="text-6xl">🌿</div>
+                  )}
+                </div>
+                <CardTitle className="text-3xl">
+                  {result.isGoodDayForExercise ? "Ótimo dia para se exercitar!" : "Recomendado descansar hoje"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="bg-pink-50 rounded-lg p-6">
+                  <p className="text-sm text-gray-600 mb-2">Atividade recomendada</p>
+                  <p className="text-2xl font-bold text-pink-600">
+                    {result.recommendedExerciseType}
+                  </p>
+                </div>
 
-              <div className="text-center">
-                <p className="text-sm text-gray-600 mb-1">Sua pontuação de bem-estar</p>
-                <p className="text-4xl font-bold text-gray-900">{result.totalScore}</p>
-              </div>
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-1">Sua pontuação de bem-estar</p>
+                  <p className="text-4xl font-bold text-gray-900">{result.totalScore}</p>
+                </div>
 
-              <Button
-                onClick={() => navigate("/")}
-                className="w-full bg-pink-500 hover:bg-pink-600 text-white py-6 text-lg font-semibold"
-              >
-                Voltar para o painel
-              </Button>
+                <Button
+                  onClick={() => navigate("/")}
+                  className="w-full bg-pink-500 hover:bg-pink-600 text-white py-6 text-lg font-semibold"
+                >
+                  Voltar para o painel
+                </Button>
 
-              <Button
-                onClick={() => navigate("/exercises")}
-                variant="outline"
-                className="w-full py-6 text-lg"
-              >
-                Ver biblioteca de exercícios
-              </Button>
-            </CardContent>
-          </Card>
+                <Button
+                  onClick={() => navigate("/exercises")}
+                  variant="outline"
+                  className="w-full py-6 text-lg"
+                >
+                  Ver biblioteca de exercícios
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-0 shadow-lg">
+              <CardHeader className="text-center space-y-2">
+                <CardTitle className="text-2xl text-pink-600">Desbloqueie seu resultado</CardTitle>
+                <CardDescription>
+                  Veja o semáforo do dia e recomendações seguras ativando um plano.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-pink-50 border border-pink-100 rounded-lg p-4 text-sm text-gray-800 space-y-2">
+                  <p>Seu check-in foi registrado.</p>
+                  <p>Assine para visualizar o semáforo, a atividade recomendada e salvar seu progresso.</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Button
+                    disabled={activatePlanMutation.isPending}
+                    onClick={() => activatePlanMutation.mutate()}
+                    className="w-full bg-pink-500 hover:bg-pink-600 text-white"
+                  >
+                    {activatePlanMutation.isPending ? "Ativando..." : "Assinar e ver resultado"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full border-pink-200 text-pink-700"
+                    onClick={() => navigate("/auth")}
+                  >
+                    Já tenho conta/plano
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     );
@@ -162,6 +214,22 @@ export default function QuizPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-green-50 p-4">
       <div className="max-w-2xl mx-auto space-y-6">
+        {needsAnamnesis && (
+          <Card className="border-pink-200 bg-pink-50">
+            <CardContent className="pt-6 space-y-2">
+              <p className="text-sm text-pink-800">
+                Complete sua anamnese clínica para personalizar o algoritmo e liberar o check-in diário.
+              </p>
+              <Button
+                className="bg-pink-500 hover:bg-pink-600 text-white"
+                onClick={() => navigate("/anamnese")}
+              >
+                Fazer anamnese agora
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Medical Disclaimer */}
         <Card className="border-amber-200 bg-amber-50">
           <CardContent className="pt-6">
@@ -207,6 +275,7 @@ export default function QuizPage() {
                   onClick={() => handleAnswer("YES")}
                   variant={answers[currentQuestion.id] === "YES" ? "default" : "outline"}
                   className="flex-1 py-6 text-lg"
+                  disabled={needsAnamnesis}
                 >
                   Sim
                 </Button>
@@ -214,6 +283,7 @@ export default function QuizPage() {
                   onClick={() => handleAnswer("NO")}
                   variant={answers[currentQuestion.id] === "NO" ? "default" : "outline"}
                   className="flex-1 py-6 text-lg"
+                  disabled={needsAnamnesis}
                 >
                   Não
                 </Button>
@@ -237,6 +307,7 @@ export default function QuizPage() {
                           : "outline"
                       }
                       className="py-6 text-lg font-semibold"
+                      disabled={needsAnamnesis}
                     >
                       {num}
                     </Button>
@@ -251,17 +322,18 @@ export default function QuizPage() {
                   <Button
                     key={option.id}
                     onClick={() => handleAnswer(option.scoreValue)}
-                    variant={
-                      answers[currentQuestion.id] === option.scoreValue
-                        ? "default"
-                        : "outline"
-                    }
-                    className="w-full justify-start py-6 text-lg"
-                  >
-                    {answers[currentQuestion.id] === option.scoreValue && (
-                      <CheckCircle className="w-5 h-5 mr-2" />
-                    )}
-                    {option.text}
+                          variant={
+                            answers[currentQuestion.id] === option.scoreValue
+                              ? "default"
+                              : "outline"
+                          }
+                          className="w-full justify-start py-6 text-lg"
+                          disabled={needsAnamnesis}
+                        >
+                          {answers[currentQuestion.id] === option.scoreValue && (
+                            <CheckCircle className="w-5 h-5 mr-2" />
+                          )}
+                          {option.text}
                   </Button>
                 ))}
               </div>
@@ -284,7 +356,7 @@ export default function QuizPage() {
           {isLastQuestion ? (
             <Button
               onClick={handleSubmit}
-              disabled={!isAnswered || submitMutation.isPending}
+              disabled={!isAnswered || submitMutation.isPending || needsAnamnesis}
               className="flex-1 bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold"
             >
               {submitMutation.isPending ? "Enviando..." : "Enviar questionário"}
@@ -292,7 +364,7 @@ export default function QuizPage() {
           ) : (
             <Button
               onClick={() => setCurrentQuestionIndex(currentQuestionIndex + 1)}
-              disabled={!isAnswered}
+              disabled={!isAnswered || needsAnamnesis}
               className="flex-1 bg-pink-500 hover:bg-pink-600 text-white py-6 text-lg font-semibold"
             >
               Próxima
@@ -301,6 +373,77 @@ export default function QuizPage() {
           )}
         </div>
       </div>
+      {/* Paywall Modal */}
+      <Dialog open={showPaywall} onOpenChange={setShowPaywall}>
+        <DialogContent className="xl:min-w-[900px] 2xl:min-w-[1100px] w-[98vw]">
+          <DialogHeader className="2xl:min-w-[700px] xl:min-w-[600px]">
+            <DialogTitle className="2xl:text-2xl xl:text-md text-pink-600">Desbloqueie seu resultado</DialogTitle>
+            <DialogDescription className="2xl:text-base xl:text-sm text-gray-700">
+              Para ver o semáforo do dia e recomendações seguras, ative um plano. Você pode testar o fluxo gratuitamente, mas o resultado completo é liberado apenas para assinantes.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 md:grid-cols-3 grid-cols-1">
+            {[
+              {
+                name: "Amostra gratuita",
+                price: "R$ 0",
+                description: "Teste o quiz e veja o fluxo. Resultado completo apenas para assinantes.",
+                action: "Continuar testando",
+                highlight: false,
+                onClick: () => {
+                  setShowPaywall(false);
+                  navigate("/em-desenvolvimento");
+                },
+              },
+              {
+                name: "Plano Mensal",
+                price: "R$ 89/mês",
+                description: "Semáforo diário, aulas seguras, histórico e acompanhamento.",
+                action: "Assinar mensal",
+                highlight: true,
+                onClick: () => activatePlanMutation.mutate(),
+              },
+              {
+                name: "Plano Anual",
+                price: "R$ 890/ano",
+                description: "12 meses com economia e suporte contínuo.",
+                action: "Assinar anual",
+                highlight: false,
+                onClick: () => activatePlanMutation.mutate(),
+              },
+            ].map((plan, idx) => (
+              <Card
+                key={idx}
+                className={`border ${plan.highlight ? "border-pink-300 shadow-xl" : "border-pink-100"}`}
+              >
+                <CardContent className="p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="font-semibold text-gray-900">{plan.name}</p>
+                    {plan.highlight && (
+                      <Badge className="bg-pink-100 text-pink-700 border-pink-200">Mais escolhido</Badge>
+                    )}
+                  </div>
+                  <p className="2xl:text-2xl xl:text-md font-bold text-pink-600">{plan.price}</p>
+                  <p className="2xl:text-base xl:text-sm text-gray-700 leading-relaxed">{plan.description}</p>
+                  <Button
+                    disabled={activatePlanMutation.isPending && plan.highlight}
+                    onClick={plan.onClick}
+                    className={plan.highlight ? "w-full bg-pink-500 hover:bg-pink-600 text-white" : "w-full border-pink-200 text-pink-700"}
+                    variant={plan.highlight ? "default" : "outline"}
+                  >
+                    {plan.highlight && activatePlanMutation.isPending ? "Ativando..." : plan.action}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="flex justify-end">
+            <Button variant="ghost" onClick={() => setShowPaywall(false)}>
+              Talvez depois
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

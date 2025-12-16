@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 
 export default function AuthPage() {
   const { isAuthenticated, loading } = useAuth();
@@ -21,6 +22,8 @@ export default function AuthPage() {
   const [pending, setPending] = useState(false);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [planChoice, setPlanChoice] = useState<"trial" | "monthly" | "annual" | null>(null);
+  const [showPlanModal, setShowPlanModal] = useState(false);
 
   const isRegister = mode === "register";
 
@@ -42,6 +45,10 @@ export default function AuthPage() {
         toast.error("Você precisa aceitar os termos de uso e responsabilidade");
         return;
       }
+      if (isRegister && !planChoice) {
+        toast.error("Selecione um plano para continuar");
+        return;
+      }
       setPending(true);
       const endpoint = isRegister ? "/api/auth/register" : "/api/auth/login";
       const res = await fetch(endpoint, {
@@ -49,13 +56,23 @@ export default function AuthPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
           isRegister
-            ? { email: emailValue, password: passwordValue, name: nameValue }
+            ? { email: emailValue, password: passwordValue, name: nameValue, planChoice }
             : { email: emailValue, password: passwordValue }
         ),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(data?.error || "Falha na autenticação");
+      }
+      if (isRegister) {
+        toast.success("Conta criada! Entre com seu email e senha para continuar.");
+        try {
+          localStorage.setItem("needs-anamnesis", "1");
+        } catch {}
+        setMode("login");
+        setPassword("");
+        setTermsAccepted(false);
+        return;
       }
       window.location.href = "/";
     } catch (error: any) {
@@ -209,10 +226,30 @@ export default function AuthPage() {
                   />
                 </div>
                 {isRegister && (
-                  <div className="space-y-2 rounded-lg border border-pink-100 bg-pink-50 p-3 text-left">
+                  <div className="space-y-3 rounded-lg border border-pink-100 bg-pink-50 p-3 text-left">
                     <p className="text-sm text-gray-800">
-                      Para criar sua conta, leia e aceite os termos de uso e responsabilidade.
+                      Para criar sua conta, escolha um plano, leia e aceite os termos de uso e responsabilidade.
                     </p>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="border-pink-200 text-pink-700 w-full"
+                      onClick={() => setShowPlanModal(true)}
+                    >
+                      Visualizar planos para completar o cadastro
+                    </Button>
+                    {planChoice && (
+                      <p className="text-xs text-pink-700">
+                        Plano selecionado:{" "}
+                        {planChoice === "trial"
+                          ? "Amostra gratuita"
+                          : planChoice === "monthly"
+                          ? "Plano mensal"
+                          : "Plano anual"}
+                      </p>
+                    )}
+
                     <Label htmlFor="accept-terms" className="text-sm text-gray-800 flex items-center gap-3">
                       <Checkbox
                         id="accept-terms"
@@ -221,7 +258,6 @@ export default function AuthPage() {
                           const next = Boolean(value);
                           if (next) {
                             setTermsModalOpen(true);
-                            // Mantém desmarcado até a confirmação no modal
                             setTermsAccepted(false);
                           } else {
                             setTermsAccepted(false);
@@ -305,10 +341,70 @@ export default function AuthPage() {
         </div>
       </footer>
 
+      {/* Modal de planos */}
+      <Dialog open={showPlanModal} onOpenChange={setShowPlanModal}>
+        <DialogContent className="2xl:min-w-[900px] w-[95vw]">
+          <DialogHeader>
+            <DialogTitle className="2xl:text-2xl text-md text-pink-600">Escolha seu plano</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 md:grid-cols-3 grid-cols-1">
+            {[
+              {
+                value: "trial",
+                name: "Amostra gratuita",
+                price: "R$ 0",
+                desc: "Teste o fluxo, resultado bloqueado.",
+                highlight: false,
+              },
+              {
+                value: "monthly",
+                name: "Plano Mensal",
+                price: "R$ 89/mês",
+                desc: "Semáforo diário, aulas seguras e histórico.",
+                highlight: true,
+              },
+              {
+                value: "annual",
+                name: "Plano Anual",
+                price: "R$ 890/ano",
+                desc: "12 meses com economia e suporte contínuo.",
+                highlight: false,
+              },
+            ].map(plan => (
+              <div
+                key={plan.value}
+                className={`rounded-lg border p-4 space-y-2 ${
+                  planChoice === plan.value ? "border-pink-500 shadow-sm" : "border-pink-100"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <p className="2xl:text-lg text-md font-semibold text-gray-900">{plan.name}</p>
+                  {plan.highlight && (
+                    <Badge className="bg-pink-100 text-pink-700 border-pink-200">Mais escolhido</Badge>
+                  )}
+                </div>
+                <p className="2xl:text-2xl text-md font-bold text-pink-600">{plan.price}</p>
+                <p className="text-sm text-gray-700 leading-relaxed">{plan.desc}</p>
+                <Button
+                  onClick={() => {
+                    setPlanChoice(plan.value as typeof planChoice);
+                    setShowPlanModal(false);
+                  }}
+                  className={plan.highlight ? "w-full bg-pink-500 hover:bg-pink-600" : "w-full border-pink-200 text-pink-700"}
+                  variant={plan.highlight ? "default" : "outline"}
+                >
+                  Selecionar
+                </Button>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={termsModalOpen} onOpenChange={setTermsModalOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col gap-3">
           <DialogHeader>
-            <DialogTitle className="text-xl text-pink-600">
+            <DialogTitle className="2xl:text-xl text-md text-pink-600">
               Termos de uso, responsabilidade e consentimento
             </DialogTitle>
           </DialogHeader>
@@ -326,7 +422,7 @@ export default function AuthPage() {
               <div className="flex-1 h-[40vh] max-h-[40vh] overflow-y-auto pr-2">
                 <div className="space-y-4 pr-2 pb-2">
                   <div className="space-y-2">
-                    <h3 className="font-semibold text-gray-900">
+                    <h3 className="2xl:text-lg text-md font-semibold text-gray-900">
                       Aviso de consentimento e declaração de responsabilidade — Movimento para Cura
                     </h3>
                     <p className="text-sm text-gray-700">
@@ -384,7 +480,7 @@ export default function AuthPage() {
               <div className="flex-1 h-[40vh] max-h-[40vh] overflow-y-auto pr-2">
                 <div className="space-y-4 pr-2 pb-2">
                   <div className="space-y-2">
-                    <h3 className="font-semibold text-gray-900">
+                    <h3 className="2xl:text-lg text-md font-semibold text-gray-900">
                       Termo de uso para treinos e exercícios em oncologia — Movimento para Cura
                     </h3>
                     <p className="text-sm text-gray-700">

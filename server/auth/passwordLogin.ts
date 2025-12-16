@@ -39,15 +39,17 @@ export function registerPasswordAuthRoutes(app: Express) {
       const passwordHash = hashPassword(adminPassword);
       const dbConn = await db.getDb();
       if (dbConn) {
-        await dbConn.insert(users).values({
-          openId: adminEmail,
-          email: adminEmail,
-          name: "Admin OncoLiving",
-          role: "ONCOLOGIST",
-          passwordHash,
-          loginMethod: "password",
-          lastSignedIn: new Date(),
-        });
+      await dbConn.insert(users).values({
+        openId: adminEmail,
+        email: adminEmail,
+        name: "Admin OncoLiving",
+        role: "ONCOLOGIST",
+        hasActivePlan: true,
+        hasCompletedAnamnesis: true,
+        passwordHash,
+        loginMethod: "password",
+        lastSignedIn: new Date(),
+      });
       }
     }
   };
@@ -55,16 +57,20 @@ export function registerPasswordAuthRoutes(app: Express) {
 
   // Registration
   app.post("/api/auth/register", async (req: Request, res: Response) => {
-    const { email, password, name, role } = req.body ?? {};
+    const { email, password, name, role, planChoice } = req.body ?? {};
     const emailInput = typeof email === "string" ? email.trim() : "";
     const nameInput = typeof name === "string" ? name.trim() : "";
     const passwordValue = typeof password === "string" ? password : "";
+    const plan = typeof planChoice === "string" ? planChoice : "";
 
     if (!emailInput || !passwordValue) {
       return res.status(400).json({ error: "Email e senha são obrigatórios" });
     }
     if (!nameInput) {
       return res.status(400).json({ error: "Nome de usuário é obrigatório" });
+    }
+    if (!plan) {
+      return res.status(400).json({ error: "Selecione um plano para criar sua conta" });
     }
     if (passwordValue.length < MIN_PASSWORD_LEN) {
       return res
@@ -75,6 +81,7 @@ export function registerPasswordAuthRoutes(app: Express) {
     const normalizedEmail = normalizeEmail(emailInput);
     const displayName = nameInput;
     const passwordHash = hashPassword(passwordValue);
+    const hasActivePlan = plan === "monthly" || plan === "annual";
     const userRole = normalizeRole(role);
 
     try {
@@ -93,19 +100,14 @@ export function registerPasswordAuthRoutes(app: Express) {
         email: normalizedEmail,
         name: displayName,
         role: userRole,
+        hasActivePlan,
+        hasCompletedAnamnesis: false,
         passwordHash,
         loginMethod: "password",
         lastSignedIn: new Date(),
       });
 
-      const sessionToken = await sdk.createSessionToken(normalizedEmail, {
-        name: displayName,
-        expiresInMs: ONE_YEAR_MS,
-      });
-
-      const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-      return res.status(201).json({ success: true });
+      return res.status(201).json({ success: true, needsLogin: true });
     } catch (error) {
       console.error("[Auth] Registro falhou", error);
       return res.status(500).json({ error: "Falha ao registrar usuário" });

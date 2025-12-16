@@ -83,6 +83,25 @@ export default function ExercisesPage() {
     ? translatedExercises.filter((e) => e.intensityLevel === selectedIntensity)
     : translatedExercises;
 
+  if (user?.role === "PATIENT" && user.hasCompletedAnamnesis === false) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-green-50 p-4">
+        <div className="max-w-2xl mx-auto">
+          <Card className="border-pink-200 bg-pink-50">
+            <CardContent className="pt-6 space-y-3">
+              <p className="text-sm text-pink-800">
+                Complete sua anamnese clínica para liberar os treinos seguros e recomendações.
+              </p>
+              <Button className="bg-pink-500 hover:bg-pink-600 text-white" onClick={() => navigate("/anamnese")}>
+                Fazer anamnese agora
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-green-50">

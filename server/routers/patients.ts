@@ -5,7 +5,10 @@ import {
   getPatientProfile,
   updatePatientProfile,
   getUserById,
+  getDb,
 } from "../db";
+import { users, patientProfiles } from "../../drizzle/schema";
+import { eq } from "drizzle-orm";
 
 export const patientsRouter = router({
   /**
@@ -83,5 +86,91 @@ export const patientsRouter = router({
       });
 
       return updated;
+    }),
+
+  /**
+   * Complete anamnesis (patient only, sets flag and stores info)
+   */
+  completeAnamnesis: publicProcedure
+    .input(
+      z.object({
+        mainDiagnosis: z.string().min(1), // diagnóstico
+        cancerType: z.string().optional(),
+        age: z.number().optional(),
+        metastasis: z.string().optional(),
+        metastasisLocation: z.string().optional(),
+        chemotherapy: z.boolean().optional(),
+        radiotherapy: z.boolean().optional(),
+        hormoneTherapy: z.boolean().optional(),
+        surgery: z.string().optional(),
+        surgeryWhen: z.string().optional(),
+        painScore: z.number().optional(), // 0-10
+        fatiguePerceived: z.string().optional(),
+        neuropathy: z.boolean().optional(),
+        lymphedema: z.boolean().optional(),
+        dizziness: z.boolean().optional(),
+        fractureHistory: z.boolean().optional(),
+        thrombosisHistory: z.boolean().optional(),
+        canStandUp: z.boolean().optional(),
+        canWalk10Min: z.boolean().optional(),
+        exercisedBefore: z.boolean().optional(),
+        fearOrTrauma: z.string().optional(),
+        treatmentPhase: z.string().optional(),
+        treatmentStage: z.string().optional(),
+        observations: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.user || ctx.user.role !== "PATIENT") {
+        throw new Error("Unauthorized");
+      }
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const observations = JSON.stringify({
+        metastasis: input.metastasis,
+        metastasisLocation: input.metastasisLocation,
+        chemotherapy: input.chemotherapy,
+        radiotherapy: input.radiotherapy,
+        hormoneTherapy: input.hormoneTherapy,
+        surgery: input.surgery,
+        surgeryWhen: input.surgeryWhen,
+        painScore: input.painScore,
+        fatiguePerceived: input.fatiguePerceived,
+        neuropathy: input.neuropathy,
+        lymphedema: input.lymphedema,
+        dizziness: input.dizziness,
+        fractureHistory: input.fractureHistory,
+        thrombosisHistory: input.thrombosisHistory,
+        canStandUp: input.canStandUp,
+        canWalk10Min: input.canWalk10Min,
+        exercisedBefore: input.exercisedBefore,
+        fearOrTrauma: input.fearOrTrauma,
+        treatmentPhase: input.treatmentPhase,
+        treatmentStage: input.treatmentStage,
+        cancerType: input.cancerType,
+        age: input.age,
+        observations: input.observations,
+      });
+
+      await db
+        .insert(patientProfiles)
+        .values({
+          userId: ctx.user.id,
+          mainDiagnosis: input.mainDiagnosis,
+          treatmentStage: input.treatmentStage,
+          observations,
+        })
+        .onDuplicateKeyUpdate({
+          set: {
+            mainDiagnosis: input.mainDiagnosis,
+            treatmentStage: input.treatmentStage,
+            observations,
+          },
+        });
+
+      await db.update(users).set({ hasCompletedAnamnesis: true }).where(eq(users.id, ctx.user.id));
+
+      return { success: true, hasCompletedAnamnesis: true };
     }),
 });

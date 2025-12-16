@@ -68,6 +68,14 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       values.lastSignedIn = user.lastSignedIn;
       updateSet.lastSignedIn = user.lastSignedIn;
     }
+    if (user.hasActivePlan !== undefined) {
+      values.hasActivePlan = user.hasActivePlan;
+      updateSet.hasActivePlan = user.hasActivePlan;
+    }
+    if (user.hasCompletedAnamnesis !== undefined) {
+      values.hasCompletedAnamnesis = user.hasCompletedAnamnesis;
+      updateSet.hasCompletedAnamnesis = user.hasCompletedAnamnesis;
+    }
     if (user.role !== undefined) {
       values.role = user.role;
       updateSet.role = user.role;

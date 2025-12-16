@@ -6,10 +6,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Heart, Play, Shield, CheckCircle, Star, Quote } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 export default function LandingPage() {
   const { user, loading } = useAuth();
   const [, navigate] = useLocation();
+  const [trialName, setTrialName] = useState("");
 
   useEffect(() => {
     if (loading || !user) return;
@@ -26,7 +29,15 @@ export default function LandingPage() {
       else navigate("/dashboard");
       return;
     }
-    navigate("/auth");
+    navigate("/quiz");
+  };
+
+  const handlePlanClick = (cta: string) => {
+    if (cta.toLowerCase().includes("assinar")) {
+      navigate("/em-desenvolvimento");
+      return;
+    }
+    handleStart();
   };
 
   const videoItems = [
@@ -56,6 +67,53 @@ export default function LandingPage() {
     },
   ];
 
+  const methodology = [
+    {
+      title: "Fluxo clínico",
+      content:
+        "Boas-vindas → Cadastro básico → Anamnese clínica (1ª vez) → Home → Check-in diário → Algoritmo de decisão → Semáforo do dia → Treinos seguros → Registro automático → Acompanhamento → Conteúdo educativo. Anamnese cria travas de segurança permanentes; check-in decide o dia.",
+    },
+    {
+      title: "Anamnese (base fixa)",
+      content:
+        "Coleta contra-indicações absolutas e restrições específicas, define limites máximos e oculta aulas inadequadas. Campos: diagnóstico, metástase (local), tratamentos, dores, fadiga, neuropatia, linfedema, tontura, fratura/trombose, capacidade funcional (levantar, caminhar), exercício prévio.",
+    },
+    {
+      title: "Check-in diário (variável)",
+      content:
+        "Fadiga, dor, enjoo, diarreia, apetite, sono, febre, dia de quimio (antes/depois) e sensação geral. Alimenta o semáforo e o algoritmo decide a cor do dia.",
+    },
+    {
+      title: "Semáforo e aulas seguras",
+      content:
+        "Vermelho: mobilidade/respiração sem carga; Amarelo: força nível 1 sentada, cardio leve; Verde: força 1/2 em pé, cardio leve/moderado. Sempre sem treino pesado, só estímulo inteligente.",
+    },
+  ];
+
+  const plans = [
+    {
+      name: "Amostra gratuita",
+      price: "R$ 0",
+      description: "Faça o quiz demonstrativo e entenda o fluxo. Resultado completo apenas para assinantes.",
+      cta: "Testar agora",
+      highlight: false,
+    },
+    {
+      name: "Plano Mensal",
+      price: "R$ 89/mês",
+      description: "Acesso completo ao semáforo diário, aulas seguras e histórico.",
+      cta: "Assinar mensal",
+      highlight: true,
+    },
+    {
+      name: "Plano Anual",
+      price: "R$ 890/ano",
+      description: "12 meses com economia e suporte contínuo no acompanhamento.",
+      cta: "Assinar anual",
+      highlight: false,
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-green-50 text-gray-900">
       <header className="sticky top-0 z-20 border-b border-pink-100/70 bg-white/80 backdrop-blur">
@@ -70,17 +128,135 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" className="border-pink-200 text-pink-700" onClick={handleStart}>
-              Já tenho conta
+            <Button variant="outline" className="border-pink-200 text-pink-700" onClick={() => navigate("/auth")}>
+              Entrar / Criar conta
             </Button>
             <Button className="bg-pink-500 hover:bg-pink-600" onClick={handleStart}>
-              Começar agora
+              Experimente grátis
             </Button>
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-10 space-y-12">
+        {/* Apresentação oficial */}
+        <section className="grid gap-8 lg:grid-cols-2 items-start">
+          <div className="space-y-3">
+            <Badge className="bg-pink-100 text-pink-700 border-pink-200 w-fit">Movimento para Cura</Badge>
+            <h2 className="text-3xl font-bold text-gray-900">Sistema de decisão segura e autônoma</h2>
+            <p className="text-gray-700 leading-relaxed">
+              Criado para pacientes que querem se movimentar com confiança, sem medo de errar e sem colocar o tratamento em risco. Respeita as condições clínicas e funcionais de cada dia: o corpo muda, o exercício muda junto.
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              Aqui o movimento é prescrito com critério clínico — uma ferramenta não farmacológica que apoia prognóstico, funcionalidade e qualidade de vida. O paciente aprende a reconhecer sinais, entender limites e fazer escolhas seguras, mesmo em dias de quimio, rádio, pós-cirúrgico ou hormonioterapia.
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              Exercício é possível durante o tratamento oncológico quando é feito com segurança, inteligência clínica e respeito ao corpo. Nosso papel é devolver autonomia, confiança e protagonismo.
+            </p>
+          </div>
+          <Card className="border-pink-100 shadow-sm bg-white/70">
+            <CardContent className="p-6 space-y-3">
+              <h4 className="text-xl font-semibold text-pink-700">Não é um treino, é um sistema de decisão</h4>
+              <p className="text-sm text-gray-700">
+                Transformamos sintomas e condições clínicas em decisões simples e visuais:
+              </p>
+              <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
+                <li>Check-in rápido (fadiga, dor, apetite, diarreia, sono, dia de tratamento).</li>
+                <li>Interpretação automática.</li>
+                <li>Semáforo do dia: 🟢 Verde • 🟡 Amarelo • 🔴 Vermelho.</li>
+                <li>Aulas seguras e possíveis para cada cor.</li>
+                <li>Execução sem medo, com respeito ao corpo.</li>
+              </ul>
+              <p className="text-sm text-gray-700">
+                Ensina a decidir, não apenas a obedecer. Segurança, critério, autonomia.
+              </p>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Objeções e diferenciais */}
+        <section className="space-y-4">
+          <div className="flex flex-col gap-2">
+            <h3 className="text-2xl font-bold text-gray-900">Por que não é mais do mesmo</h3>
+            <p className="text-gray-700">
+              Rebatemos as principais objeções de programas genéricos com critério clínico e decisão diária.
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {[
+              {
+                title: "Exercício genérico",
+                problem: "O que funciona hoje pode ser perigoso amanhã (quimio, exames, sintomas).",
+                diff: "Nenhuma decisão é genérica: toda escolha passa por avaliação diária de segurança.",
+              },
+              {
+                title: "Motivação como base",
+                problem: "Medo, dor, fadiga e insegurança não se resolvem com frases motivacionais.",
+                diff: "Não depende de motivação; depende de critério clínico e decisão segura.",
+              },
+              {
+                title: "Promessas mágicas",
+                problem: "Autocura/detox criam culpa e ignoram limites fisiológicos.",
+                diff: "Baseado em ciência, fisiologia e segurança. Sem romantização ou culpa.",
+              },
+              {
+                title: "\"Todo dia é dia\"",
+                problem: "No câncer, treino no dia errado pode piorar sintomas e riscos.",
+                diff: "Nem todo dia é treino, mas todo dia é cuidado ativo guiado pelo semáforo.",
+              },
+              {
+                title: "Obedecer versus decidir",
+                problem: "Seguir ordens gera dependência e abandono.",
+                diff: "Ensinamos a pensar, avaliar e decidir. Paciente autônomo, não obediente.",
+              },
+            ].map((item, idx) => (
+              <Card key={idx} className="border-pink-100">
+                <CardContent className="p-5 space-y-2">
+                  <h4 className="font-semibold text-gray-900">{item.title}</h4>
+                  <p className="text-sm text-gray-700">Problema: {item.problem}</p>
+                  <p className="text-sm text-pink-700 font-semibold">Diferencial: {item.diff}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* Como funciona em 7 passos */}
+        <section className="space-y-4">
+          <h3 className="text-2xl font-bold text-gray-900">Como funciona na prática</h3>
+          <div className="grid gap-4 md:grid-cols-3">
+            {[
+              "Check-in clínico rápido do dia.",
+              "Algoritmo interpreta sintomas e contexto.",
+              "Semáforo claro: Verde, Amarelo ou Vermelho.",
+              "Cada cor abre aulas seguras e possíveis.",
+              "Execução sem medo, com orientação.",
+              "Registro automático do dia.",
+              "Acompanhamento e conteúdo educativo.",
+            ].map((step, idx) => (
+              <Card key={idx} className="border-pink-100">
+                <CardContent className="p-4 space-y-2">
+                  <div className="text-pink-600 font-semibold">Passo {idx + 1}</div>
+                  <p className="text-sm text-gray-800 leading-relaxed">{step}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* Fechamento honesto */}
+        <section>
+          <Card className="border-pink-200 bg-pink-50">
+            <CardContent className="p-6 space-y-3">
+              <h3 className="text-2xl font-bold text-pink-700">Fechamento honesto</h3>
+              <p className="text-gray-800">
+                Você não concorre com métodos genéricos; você os substitui. Eles oferecem opinião e motivação.
+                O Movimento para Cura oferece segurança, critério, decisão, autonomia e cuidado real.
+              </p>
+            </CardContent>
+          </Card>
+        </section>
+
         {/* Hero */}
         <section className="grid gap-10 lg:grid-cols-2 items-center">
           <div className="space-y-6">
@@ -93,12 +269,15 @@ export default function LandingPage() {
               baseado em evidências e diretrizes internacionais, para ajudar você a decidir se é um bom
               dia para se exercitar e qual atividade escolher.
             </p>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-3 items-center">
+              <Input
+                placeholder="Seu nome para testar"
+                value={trialName}
+                onChange={e => setTrialName(e.target.value)}
+                className="w-full sm:w-64"
+              />
               <Button className="bg-pink-500 hover:bg-pink-600 text-lg px-6" onClick={handleStart}>
-                Quero começar
-              </Button>
-              <Button variant="outline" className="border-pink-200 text-pink-700" onClick={handleStart}>
-                Criar conta e acessar
+                Experimente grátis
               </Button>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -139,6 +318,59 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Ilustrações reais */}
+        <section className="grid gap-6 lg:grid-cols-2 items-center">
+          <div className="space-y-3">
+            <h3 className="text-2xl font-bold text-gray-900">Cuidado com pessoas reais</h3>
+            <p className="text-gray-700">
+              Mulheres em tratamento oncológico seguem o semáforo do dia para manter movimento com segurança e autonomia.
+              As imagens ilustram o tipo de paciente que apoiamos: foco em conforto, respeito e orientação clínica.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              {
+                src: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80",
+                alt: "Paciente com lenço sorrindo durante sessão leve",
+              },
+              {
+                src: "https://images.unsplash.com/photo-1494797706938-5daec89fbff4?auto=format&fit=crop&w=800&q=80",
+                alt: "Paciente em reabilitação com acompanhamento",
+              },
+              {
+                src: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=800&q=80",
+                alt: "Paciente confiante olhando para frente",
+              },
+              {
+                src: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=800&q=80",
+                alt: "Paciente relaxando em ambiente acolhedor",
+              },
+            ].map((img, idx) => (
+              <div key={idx} className="h-32 sm:h-40 lg:h-44 overflow-hidden rounded-2xl shadow-sm">
+                <img src={img.src} alt={img.alt} className="h-full w-full object-cover" />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Estrutura clínica */}
+        <section className="space-y-4">
+          <h3 className="text-2xl font-bold text-gray-900">Como funciona o sistema de decisão clínica</h3>
+          <p className="text-gray-700">
+            Anamnese cria travas de segurança; o check-in diário decide o dia. O app ensina a decidir, não só a treinar.
+          </p>
+          <div className="grid gap-4 md:grid-cols-2">
+            {methodology.map((item, idx) => (
+              <Card key={idx} className="border-pink-100">
+                <CardContent className="p-4 space-y-2">
+                  <h4 className="font-semibold text-gray-900">{item.title}</h4>
+                  <p className="text-sm text-gray-700 leading-relaxed">{item.content}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
         {/* Produto e metodologia */}
         <section className="space-y-6">
           <div className="flex flex-col gap-2">
@@ -175,6 +407,42 @@ export default function LandingPage() {
                 </p>
               </CardContent>
             </Card>
+          </div>
+        </section>
+
+        {/* Planos e amostra */}
+        <section className="space-y-6">
+          <div className="flex flex-col gap-2">
+            <h3 className="text-2xl font-bold text-gray-900">Planos e acesso</h3>
+            <p className="text-gray-700">
+              Teste grátis o fluxo do quiz. Para ver o resultado completo e histórico, ative um plano.
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {plans.map((plan, idx) => (
+              <Card
+                key={idx}
+                className={`border ${plan.highlight ? "border-pink-300 shadow-xl" : "border-pink-100"}`}
+              >
+                <CardContent className="p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-lg text-gray-900">{plan.name}</h4>
+                    {plan.highlight && (
+                      <Badge className="bg-pink-100 text-pink-700 border-pink-200">Mais escolhido</Badge>
+                    )}
+                  </div>
+                  <p className="text-2xl font-bold text-pink-600">{plan.price}</p>
+                  <p className="text-sm text-gray-700">{plan.description}</p>
+                  <Button
+                    className={plan.highlight ? "bg-pink-500 hover:bg-pink-600 w-full" : "border-pink-200 text-pink-700 w-full"}
+                    variant={plan.highlight ? "default" : "outline"}
+                    onClick={() => handlePlanClick(plan.cta)}
+                  >
+                    {plan.cta}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </section>
 

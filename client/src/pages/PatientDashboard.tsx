@@ -6,10 +6,13 @@ import { AlertCircle, CheckCircle, XCircle, TrendingUp } from "lucide-react";
 import { useLocation } from "wouter";
 import { format, subDays } from "date-fns";
 import { skipToken } from "@tanstack/react-query";
+import { AppHeader } from "@/components/AppHeader";
 
 export default function PatientDashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [, navigate] = useLocation();
+
+  const needsAnamnesis = user && user.role === "PATIENT" && user.hasCompletedAnamnesis === false;
 
   // Get active quiz
   const { data: activeQuiz, isLoading: quizLoading } = trpc.quizzes.getActive.useQuery();
@@ -34,11 +37,6 @@ export default function PatientDashboard() {
 
   const goodDaysCount = history.filter((r) => r.isGoodDayForExercise).length;
   const totalDays = history.length;
-  const handleLogout = async () => {
-    await logout();
-    navigate("/");
-  };
-
   if (quizLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -71,16 +69,22 @@ export default function PatientDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-green-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-green-50">
+      <AppHeader />
+      <div className="p-4">
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">
-            Sessão ativa: {user?.email ?? user?.name ?? ""}
-          </div>
-          <Button variant="outline" onClick={handleLogout}>
-            Sair
-          </Button>
-        </div>
+        {needsAnamnesis && (
+          <Card className="border-pink-200 bg-pink-50">
+            <CardContent className="pt-6 space-y-3">
+              <p className="text-sm text-pink-800">
+                Você ainda não completou sua anamnese clínica. Preencha uma única vez para liberar o algoritmo e os treinos seguros.
+              </p>
+              <Button className="bg-pink-500 hover:bg-pink-600 text-white" onClick={() => navigate("/anamnese")}>
+                Fazer anamnese agora
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Aviso médico */}
         <Card className="border-amber-200 bg-amber-50">
@@ -147,9 +151,15 @@ export default function PatientDashboard() {
               <Button
                 onClick={() => navigate("/quiz")}
                 className="w-full bg-pink-500 hover:bg-pink-600 text-white py-6 text-lg font-semibold"
+                disabled={needsAnamnesis}
               >
                 Fazer questionário diário
               </Button>
+              {needsAnamnesis && (
+                <p className="text-xs text-pink-700 mt-2">
+                  Complete sua anamnese para liberar o check-in diário.
+                </p>
+              )}
             </CardContent>
           </Card>
         )}
@@ -190,24 +200,29 @@ export default function PatientDashboard() {
 
         {/* Quick Links */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Button
-            variant="outline"
-            onClick={() => navigate("/history")}
-            className="h-auto py-4 flex flex-col items-center gap-2"
-          >
-            <span className="text-2xl">📊</span>
-            <span className="font-semibold">Ver histórico completo</span>
-          </Button>
+          {history.length > 0 && (
+            <Button
+              variant="outline"
+              onClick={() => navigate("/history")}
+              className="h-auto py-4 flex flex-col items-center gap-2"
+              disabled={needsAnamnesis}
+            >
+              <span className="text-2xl">📊</span>
+              <span className="font-semibold">Ver histórico completo</span>
+            </Button>
+          )}
           <Button
             variant="outline"
             onClick={() => navigate("/exercises")}
             className="h-auto py-4 flex flex-col items-center gap-2"
+            disabled={needsAnamnesis}
           >
             <span className="text-2xl">💪</span>
             <span className="font-semibold">Biblioteca de exercícios</span>
           </Button>
         </div>
       </div>
+    </div>
     </div>
   );
 }
