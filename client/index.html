@@ -21,21 +21,17 @@
       const analyticsEndpointRaw = "%VITE_ANALYTICS_ENDPOINT%";
       const analyticsWebsiteIdRaw = "%VITE_ANALYTICS_WEBSITE_ID%";
 
-      const isPlaceholder = (value, placeholder) =>
-        !value || value === placeholder || value.includes(placeholder);
+      const isUnset = (value) => !value || value.includes("%VITE_");
 
-      const analyticsEndpoint = isPlaceholder(analyticsEndpointRaw, "%VITE_ANALYTICS_ENDPOINT%")
-        ? ""
-        : analyticsEndpointRaw;
-      const analyticsWebsiteId = isPlaceholder(analyticsWebsiteIdRaw, "%VITE_ANALYTICS_WEBSITE_ID%")
-        ? ""
-        : analyticsWebsiteIdRaw;
+      if (!isUnset(analyticsEndpointRaw) && !isUnset(analyticsWebsiteIdRaw)) {
+        const analyticsEndpoint = analyticsEndpointRaw.endsWith("/")
+          ? analyticsEndpointRaw.slice(0, -1)
+          : analyticsEndpointRaw;
 
-      if (analyticsEndpoint && analyticsWebsiteId) {
         const script = document.createElement("script");
         script.defer = true;
-        script.src = `${analyticsEndpoint.replace(/\\/$/, "")}/umami`;
-        script.dataset.websiteId = analyticsWebsiteId;
+        script.src = `${analyticsEndpoint}/umami`;
+        script.dataset.websiteId = analyticsWebsiteIdRaw;
         document.body.appendChild(script);
       }
     </script>

@@ -179,11 +179,21 @@ export default function LandingPage() {
                 <div className="bg-gradient-to-br from-pink-500 to-green-400 p-8 text-white">
                   <p className="text-sm uppercase tracking-wide font-semibold">Sobre a profissional</p>
                   <h2 className="text-3xl font-bold mt-3">Andressa Semionatto</h2>
-                  <p className="mt-4 text-base leading-relaxed">
-                    Personal trainer oncológica e fundadora da Andressa Business Saúde Fitness e Oncologia.
-                    Criou o Movimento para Cura para orientar pacientes em dias seguros e não recomendados, com
-                    foco em segurança, autonomia e bem-estar.
-                  </p>
+                  <div className="mt-4 space-y-3 text-base leading-relaxed">
+                    <p>
+                      Andressa Semionatto é profissional de Educação Física, especialista em exercício físico
+                      para pessoas em tratamento oncológico, com atuação clínica e hospitalar.
+                    </p>
+                    <p>
+                      Há mais de 8 anos, acompanha pacientes durante a quimioterapia, radioterapia e
+                      pós-cirúrgico, no Brasil e no exterior, somando mais de 3.000 pacientes atendidos.
+                    </p>
+                    <p>
+                      Seu trabalho une ciência, prática clínica e sensibilidade humana para ajudar pessoas com
+                      câncer a se movimentarem com segurança, autonomia, qualidade de vida e longevidade,
+                      respeitando o momento do corpo e a atual fase do seu tratamento.
+                    </p>
+                  </div>
                   <div className="mt-6 flex flex-wrap gap-3">
                     <Badge className="bg-white/20 border-white/30 text-white">Onco-personal</Badge>
                     <Badge className="bg-white/20 border-white/30 text-white">Evidências científicas</Badge>
@@ -203,8 +213,8 @@ export default function LandingPage() {
               <Card className="flex-1 border-pink-100">
                 <CardContent className="p-4">
                   <p className="text-sm text-gray-600">Experiência</p>
-                  <p className="text-xl font-bold text-pink-600">+12 anos</p>
-                  <p className="text-xs text-gray-600">Em exercício oncológico.</p>
+                  <p className="text-xl font-bold text-pink-600">+8 anos</p>
+                  <p className="text-xs text-gray-600">3.000+ pacientes acompanhados.</p>
                 </CardContent>
               </Card>
             </div>
