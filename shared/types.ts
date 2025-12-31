@@ -15,6 +15,7 @@ export type User = {
   loginMethod: string | null;
   hasActivePlan: boolean;
   hasCompletedAnamnesis: boolean;
+  planType?: string | null;
   createdAt: Date;
   updatedAt: Date;
   lastSignedIn: Date;
@@ -114,4 +115,3 @@ export type ExerciseTutorial = {
 };
 
 export * from "./_core/errors";
-

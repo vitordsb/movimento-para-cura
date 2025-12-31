@@ -75,7 +75,15 @@ export function registerPasswordAuthRoutes(app: Express) {
     const normalizedEmail = normalizeEmail(emailInput);
     const displayName = nameInput;
     const passwordHash = hashPassword(passwordValue);
-    const hasActivePlan = plan === "monthly" || plan === "annual";
+    const hasActivePlan = plan === "monthly" || plan === "annual" || plan === "free";
+    const planType =
+      plan === "monthly"
+        ? "PAID_MONTHLY"
+        : plan === "annual"
+        ? "PAID_ANNUAL"
+        : plan === "free"
+        ? "FREE_LIMITED"
+        : "TRIAL_LIMITED";
     const userRole = normalizeRole(role);
 
     try {
@@ -93,6 +101,7 @@ export function registerPasswordAuthRoutes(app: Express) {
         loginMethod: "password",
         hasActivePlan,
         hasCompletedAnamnesis: false,
+        planType,
       });
 
       return res.status(201).json({ success: true, needsLogin: true });

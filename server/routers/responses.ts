@@ -3,74 +3,81 @@ import { publicProcedure, router } from "../api/trpc";
 import {
   getTodayResponse,
   getPatientResponses,
-  getScoringConfigForQuiz,
   getQuizWithQuestions,
   insertQuizResponse,
 } from "../db";
 
-/**
- * Calculate score from quiz answers based on question weights and response values
- */
-function calculateScore(
-  answers: Array<{
-    questionId: number;
-    weight: number;
-    questionType: string;
-    answerValue: string;
-  }>
-): number {
-  let totalScore = 0;
+function determineDailyDecision(questions: any[], answers: Record<number, string>) {
+  const byOrder = (order: number) => {
+    const q = questions.find((question) => question.order === order);
+    if (!q) return undefined;
+    return answers[q.id];
+  };
 
-  for (const answer of answers) {
-    let questionScore = 0;
+  const energy = byOrder(1);
+  const fatigue = byOrder(2);
+  const pain = byOrder(3);
+  const symptoms = byOrder(4);
+  const treatmentDay = byOrder(5);
+  const sleep = byOrder(6);
+  const emotional = byOrder(7);
+  const safety = byOrder(8);
+  const discomfort = byOrder(9);
 
-    if (answer.questionType === "YES_NO") {
-      questionScore = answer.answerValue === "YES" ? 10 : 0;
-    } else if (answer.questionType === "SCALE_0_10") {
-      questionScore = parseInt(answer.answerValue) || 0;
-    } else if (answer.questionType === "MULTIPLE_CHOICE") {
-      // This will be handled by scoreValue from options
-      questionScore = parseInt(answer.answerValue) || 0;
-    }
+  const isRest =
+    fatigue === "FATIGUE_INTENSE" ||
+    pain === "PAIN_STRONG" ||
+    energy === "ENERGY_EXHAUSTED" ||
+    symptoms === "SYM_MULTIPLOS" ||
+    safety === "SAFETY_NAO" ||
+    safety === "SAFETY_DUVIDA" ||
+    discomfort === "DISCONFORTO_SIM";
 
-    totalScore += questionScore * answer.weight;
+  if (isRest) {
+    return {
+      path: "RECUPERAR" as const,
+      isGoodDayForExercise: false,
+      recommendedExerciseType: "Recuperação e descanso ativo",
+      score: "20",
+    };
   }
 
-  return totalScore;
-}
+  const hasSymptoms = symptoms && symptoms !== "SYM_NENHUM";
+  const treatmentDemanding =
+    treatmentDay === "TREATMENT_QUIMIO" ||
+    treatmentDay === "TREATMENT_RADIO" ||
+    treatmentDay === "TREATMENT_HORMONIO" ||
+    treatmentDay === "TREATMENT_POS_CIRURGICO";
 
-/**
- * Determine if it's a good day and recommend exercise based on score
- */
-function getRecommendation(
-  score: number,
-  scoringConfigs: Array<{
-    minScore: string;
-    maxScore: string;
-    isGoodDay: boolean;
-    recommendedExerciseType: string;
-  }>
-) {
-  const configs = scoringConfigs.sort(
-    (a, b) => parseFloat(a.minScore) - parseFloat(b.minScore)
-  );
+  const emotionalSensitive =
+    emotional === "EMO_ANSI" ||
+    emotional === "EMO_TRISTE" ||
+    emotional === "EMO_MUITO_ABALADA";
 
-  for (const config of configs) {
-    const min = parseFloat(config.minScore);
-    const max = parseFloat(config.maxScore);
+  const isAdapt =
+    fatigue === "FATIGUE_MODERATE" ||
+    pain === "PAIN_MODERATE" ||
+    treatmentDemanding ||
+    sleep === "SLEEP_MEH" ||
+    sleep === "SLEEP_NAO" ||
+    emotionalSensitive ||
+    hasSymptoms ||
+    safety === "SAFETY_POUCO";
 
-    if (score >= min && score <= max) {
-      return {
-        isGoodDay: config.isGoodDay,
-        recommendedExerciseType: config.recommendedExerciseType,
-      };
-    }
+  if (isAdapt) {
+    return {
+      path: "ADAPTAR" as const,
+      isGoodDayForExercise: true,
+      recommendedExerciseType: "Exercício adaptado (cadeira, mobilidade, respiração)",
+      score: "50",
+    };
   }
 
-  // Default: if score is high, it's a good day for light exercise
   return {
-    isGoodDay: score >= 50,
-    recommendedExerciseType: score >= 50 ? "Light Walk" : "Rest Day",
+    path: "TREINAR" as const,
+    isGoodDayForExercise: true,
+    recommendedExerciseType: "Treinar hoje (força leve + cardio leve + mobilidade)",
+    score: "80",
   };
 }
 
@@ -109,36 +116,22 @@ export const responsesRouter = router({
         throw new Error("Quiz not found");
       }
 
-      // Build answer data with weights
-      const answersWithWeights = input.answers.map((answer) => {
-        const question = quiz.questions.find((q) => q.id === answer.questionId);
-        if (!question) {
-          throw new Error(`Question ${answer.questionId} not found`);
-        }
+      // Map answers for decision logic
+      const answersMap: Record<number, string> = {};
+      for (const answer of input.answers) {
+        answersMap[answer.questionId] = answer.answerValue;
+      }
 
-        return {
-          questionId: answer.questionId,
-          weight: parseFloat(question.weight),
-          questionType: question.questionType,
-          answerValue: answer.answerValue,
-        };
-      });
-
-      // Calculate score
-      const totalScore = calculateScore(answersWithWeights);
-
-      // Get scoring configuration
-      const scoringConfigs = await getScoringConfigForQuiz(input.quizId);
-      const recommendation = getRecommendation(totalScore, scoringConfigs);
+      const decision = determineDailyDecision(quiz.questions, answersMap);
 
       // Create response
       const responseData = {
         userId: ctx.user.id,
         quizId: input.quizId,
         responseDate: new Date(),
-        totalScore: totalScore.toString(),
-        isGoodDayForExercise: recommendation.isGoodDay,
-        recommendedExerciseType: recommendation.recommendedExerciseType,
+        totalScore: decision.score,
+        isGoodDayForExercise: decision.isGoodDayForExercise,
+        recommendedExerciseType: decision.recommendedExerciseType,
       };
 
       return await insertQuizResponse(responseData);

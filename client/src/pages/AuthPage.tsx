@@ -23,7 +23,7 @@ export default function AuthPage() {
   const [pending, setPending] = useState(false);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const [planChoice, setPlanChoice] = useState<"trial" | "monthly" | "annual" | null>(null);
+  const [planChoice, setPlanChoice] = useState<"free" | "monthly" | "annual" | null>(null);
   const [showPlanModal, setShowPlanModal] = useState(false);
 
   const isRegister = mode === "register";
@@ -248,8 +248,8 @@ export default function AuthPage() {
                     {planChoice && (
                       <p className="text-xs text-pink-700">
                         Plano selecionado:{" "}
-                        {planChoice === "trial"
-                          ? "Amostra gratuita"
+                        {planChoice === "free"
+                          ? "Continuar no teste grátis"
                           : planChoice === "monthly"
                           ? "Plano mensal"
                           : "Plano anual"}
@@ -356,18 +356,18 @@ export default function AuthPage() {
           <div className="grid gap-4 md:grid-cols-3 grid-cols-1">
             {[
               {
-                value: "trial",
-                name: "Amostra gratuita",
+                value: "free",
+                name: "Continuar no teste grátis",
                 price: "R$ 0",
-                desc: "Teste o fluxo, resultado bloqueado.",
-                highlight: false,
+                desc: "Oferta por tempo limitado. Acesso completo liberado.",
+                highlight: true,
               },
               {
                 value: "monthly",
                 name: "Plano Mensal",
                 price: "R$ 89/mês",
                 desc: "Semáforo diário, aulas seguras e histórico.",
-                highlight: true,
+                highlight: false,
               },
               {
                 value: "annual",

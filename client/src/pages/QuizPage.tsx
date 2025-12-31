@@ -115,6 +115,18 @@ export default function QuizPage() {
   const canSeeResult = hasActivePlan || isKnownPatient;
 
   if (submitted && result) {
+    const recommendation: string = result.recommendedExerciseType || "";
+    const recommendationLower = recommendation.toLowerCase();
+    const isRest = recommendationLower.includes("recuperação");
+    const isAdapt = recommendationLower.includes("adaptado");
+    const title = isRest ? "Recuperação" : isAdapt ? "Exercício adaptado" : "Exercício liberado";
+    const description = isRest
+      ? "Hoje o melhor cuidado é respeitar seu corpo. O movimento de hoje é descanso ativo e respiração."
+      : isAdapt
+      ? "Hoje seu corpo pede cuidado. O movimento de hoje será leve, respeitando seu momento."
+      : "Hoje seu corpo permite movimento com segurança. Preparamos um exercício adequado para você hoje.";
+    const ctaLabel = isRest ? "Cuidar de mim hoje" : isAdapt ? "Fazer exercício adaptado" : "Começar exercício do dia";
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-green-50 p-4 flex items-center justify-center">
         <div className="max-w-2xl w-full space-y-6">
@@ -135,42 +147,26 @@ export default function QuizPage() {
             <Card className="border-0 shadow-lg">
               <CardHeader className="text-center">
                 <div className="flex justify-center mb-4">
-                  {result.isGoodDayForExercise ? (
-                    <div className="text-6xl">💪</div>
-                  ) : (
-                    <div className="text-6xl">🌿</div>
-                  )}
+                  {isRest ? <div className="text-6xl">🌿</div> : isAdapt ? <div className="text-6xl">🪴</div> : <div className="text-6xl">💪</div>}
                 </div>
-                <CardTitle className="text-3xl">
-                  {result.isGoodDayForExercise ? "Ótimo dia para se exercitar!" : "Recomendado descansar hoje"}
-                </CardTitle>
+                <CardTitle className="text-3xl">{title}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="bg-pink-50 rounded-lg p-6">
                   <p className="text-sm text-gray-600 mb-2">Atividade recomendada</p>
-                  <p className="text-2xl font-bold text-pink-600">
-                    {result.recommendedExerciseType}
-                  </p>
+                  <p className="text-2xl font-bold text-pink-600">{recommendation}</p>
+                  <p className="text-sm text-gray-700 mt-2">{description}</p>
                 </div>
-
-                <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-1">Sua pontuação de bem-estar</p>
-                  <p className="text-4xl font-bold text-gray-900">{result.totalScore}</p>
-                </div>
-
-                <Button
-                  onClick={() => navigate("/")}
-                  className="w-full bg-pink-500 hover:bg-pink-600 text-white py-6 text-lg font-semibold"
-                >
-                  Voltar para o painel
-                </Button>
 
                 <Button
                   onClick={() => navigate("/exercises")}
-                  variant="outline"
-                  className="w-full py-6 text-lg"
+                  className="w-full bg-pink-500 hover:bg-pink-600 text-white py-6 text-lg font-semibold"
                 >
-                  Ver biblioteca de exercícios
+                  {ctaLabel}
+                </Button>
+
+                <Button onClick={() => navigate("/dashboard")} variant="outline" className="w-full py-6 text-lg">
+                  Voltar para o painel
                 </Button>
               </CardContent>
             </Card>

@@ -92,30 +92,15 @@ export const patientsRouter = router({
   completeAnamnesis: publicProcedure
     .input(
       z.object({
-        mainDiagnosis: z.string().min(1), // diagnóstico
-        cancerType: z.string().optional(),
-        age: z.number().optional(),
-        metastasis: z.string().optional(),
-        metastasisLocation: z.string().optional(),
-        chemotherapy: z.boolean().optional(),
-        radiotherapy: z.boolean().optional(),
-        hormoneTherapy: z.boolean().optional(),
-        surgery: z.string().optional(),
-        surgeryWhen: z.string().optional(),
-        painScore: z.number().optional(), // 0-10
-        fatiguePerceived: z.string().optional(),
-        neuropathy: z.boolean().optional(),
-        lymphedema: z.boolean().optional(),
-        dizziness: z.boolean().optional(),
-        fractureHistory: z.boolean().optional(),
-        thrombosisHistory: z.boolean().optional(),
-        canStandUp: z.boolean().optional(),
-        canWalk10Min: z.boolean().optional(),
-        exercisedBefore: z.boolean().optional(),
-        fearOrTrauma: z.string().optional(),
-        treatmentPhase: z.string().optional(),
+        answers: z.array(
+          z.object({
+            questionNumber: z.number(),
+            questionText: z.string(),
+            answer: z.string(),
+          })
+        ),
         treatmentStage: z.string().optional(),
-        observations: z.string().optional(),
+        interest: z.string().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -124,33 +109,14 @@ export const patientsRouter = router({
       }
 
       const observations = {
-        metastasis: input.metastasis,
-        metastasisLocation: input.metastasisLocation,
-        chemotherapy: input.chemotherapy,
-        radiotherapy: input.radiotherapy,
-        hormoneTherapy: input.hormoneTherapy,
-        surgery: input.surgery,
-        surgeryWhen: input.surgeryWhen,
-        painScore: input.painScore,
-        fatiguePerceived: input.fatiguePerceived,
-        neuropathy: input.neuropathy,
-        lymphedema: input.lymphedema,
-        dizziness: input.dizziness,
-        fractureHistory: input.fractureHistory,
-        thrombosisHistory: input.thrombosisHistory,
-        canStandUp: input.canStandUp,
-        canWalk10Min: input.canWalk10Min,
-        exercisedBefore: input.exercisedBefore,
-        fearOrTrauma: input.fearOrTrauma,
-        treatmentPhase: input.treatmentPhase,
+        anamnesisVersion: "v2",
+        answers: input.answers,
         treatmentStage: input.treatmentStage,
-        cancerType: input.cancerType,
-        age: input.age,
-        observations: input.observations,
+        interest: input.interest,
       };
 
       await updatePatientProfile(ctx.user.id, {
-        mainDiagnosis: input.mainDiagnosis,
+        mainDiagnosis: null,
         treatmentStage: input.treatmentStage,
         observations,
       });

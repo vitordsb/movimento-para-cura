@@ -35,6 +35,7 @@ const testUsersById: Record<number, User> = {
     loginMethod: "local",
     hasActivePlan: false,
     hasCompletedAnamnesis: false,
+    planType: "TEST",
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
@@ -157,6 +158,7 @@ export async function createUser(input: {
   loginMethod: string;
   hasActivePlan: boolean;
   hasCompletedAnamnesis: boolean;
+  planType?: string | null;
 }): Promise<User> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -173,6 +175,7 @@ export async function createUser(input: {
     loginMethod: input.loginMethod,
     hasActivePlan: input.hasActivePlan,
     hasCompletedAnamnesis: input.hasCompletedAnamnesis,
+    planType: input.planType ?? null,
     createdAt: now,
     updatedAt: now,
     lastSignedIn: now,
@@ -184,7 +187,7 @@ export async function createUser(input: {
 
 export async function updateUserById(
   id: number,
-  update: Partial<Pick<User, "name" | "hasActivePlan" | "hasCompletedAnamnesis" | "lastSignedIn">>
+  update: Partial<Pick<User, "name" | "hasActivePlan" | "hasCompletedAnamnesis" | "lastSignedIn" | "planType">>
 ): Promise<void> {
   const db = await getDb();
   if (!db) return;
@@ -490,116 +493,155 @@ type DefaultQuestion = {
 
 const BASELINE_QUESTIONS: DefaultQuestion[] = [
   {
-    text: "Como está seu nível de energia hoje? (0 = Muito baixo, 10 = Muito alto)",
-    questionType: "SCALE_0_10",
-    weight: "1.5",
-    order: 1,
-  },
-  {
-    text: "Como está sua dor hoje? (0 = Sem dor, 10 = Dor intensa)",
-    questionType: "SCALE_0_10",
-    weight: "2.0",
-    order: 2,
-  },
-  {
-    text: "Você está sentindo náusea hoje?",
-    questionType: "YES_NO",
-    weight: "1.0",
-    order: 3,
-  },
-  {
-    text: "Como foi a qualidade do seu sono na última noite?",
+    text: "Como está sua energia hoje?",
     questionType: "MULTIPLE_CHOICE",
-    weight: "1.2",
-    order: 4,
+    weight: "1.0",
+    order: 1,
     options: [
-      { text: "Ruim", scoreValue: "2", order: 1 },
-      { text: "Regular", scoreValue: "5", order: 2 },
-      { text: "Boa", scoreValue: "8", order: 3 },
-      { text: "Excelente", scoreValue: "10", order: 4 },
+      { text: "Estou bem / com energia", scoreValue: "ENERGY_GOOD", order: 1 },
+      { text: "Um pouco cansada", scoreValue: "ENERGY_SOMEWHAT_TIRED", order: 2 },
+      { text: "Muito cansada", scoreValue: "ENERGY_VERY_TIRED", order: 3 },
+      { text: "Exausta", scoreValue: "ENERGY_EXHAUSTED", order: 4 },
     ],
   },
   {
-    text: "Você urinou hoje?",
-    questionType: "YES_NO",
+    text: "Você sente fadiga agora?",
+    questionType: "MULTIPLE_CHOICE",
     weight: "1.0",
-    order: 5,
+    order: 2,
+    options: [
+      { text: "Não", scoreValue: "FATIGUE_NONE", order: 1 },
+      { text: "Leve", scoreValue: "FATIGUE_LIGHT", order: 2 },
+      { text: "Moderada", scoreValue: "FATIGUE_MODERATE", order: 3 },
+      { text: "Intensa", scoreValue: "FATIGUE_INTENSE", order: 4 },
+    ],
   },
   {
-    text: "Quantos líquidos você ingeriu hoje?",
+    text: "Como está sua dor hoje?",
+    questionType: "MULTIPLE_CHOICE",
+    weight: "1.0",
+    order: 3,
+    options: [
+      { text: "Não estou com dor", scoreValue: "PAIN_NONE", order: 1 },
+      { text: "Dor leve", scoreValue: "PAIN_LIGHT", order: 2 },
+      { text: "Dor moderada", scoreValue: "PAIN_MODERATE", order: 3 },
+      { text: "Dor forte", scoreValue: "PAIN_STRONG", order: 4 },
+    ],
+  },
+  {
+    text: "Você teve algum desses sintomas hoje?",
+    questionType: "MULTIPLE_CHOICE",
+    weight: "1.0",
+    order: 4,
+    options: [
+      { text: "Náusea / enjoo", scoreValue: "SYM_NAUSEA", order: 1 },
+      { text: "Tontura", scoreValue: "SYM_TONTURA", order: 2 },
+      { text: "Falta de ar", scoreValue: "SYM_FALTA_AR", order: 3 },
+      { text: "Dor de cabeça", scoreValue: "SYM_DOR_CABECA", order: 4 },
+      { text: "Diarreia", scoreValue: "SYM_DIARREIA", order: 5 },
+      { text: "Mais de um dos acima", scoreValue: "SYM_MULTIPLOS", order: 6 },
+      { text: "Nenhum desses", scoreValue: "SYM_NENHUM", order: 7 },
+    ],
+  },
+  {
+    text: "Hoje é dia de tratamento?",
+    questionType: "MULTIPLE_CHOICE",
+    weight: "1.0",
+    order: 5,
+    options: [
+      { text: "Não", scoreValue: "TREATMENT_NONE", order: 1 },
+      { text: "Sim, fiz quimioterapia hoje", scoreValue: "TREATMENT_QUIMIO", order: 2 },
+      { text: "Sim, fiz radioterapia hoje", scoreValue: "TREATMENT_RADIO", order: 3 },
+      { text: "Estou em hormonioterapia", scoreValue: "TREATMENT_HORMONIO", order: 4 },
+      { text: "Estou em pós-cirúrgico recente", scoreValue: "TREATMENT_POS_CIRURGICO", order: 5 },
+    ],
+  },
+  {
+    text: "Você dormiu bem?",
     questionType: "MULTIPLE_CHOICE",
     weight: "1.0",
     order: 6,
     options: [
-      { text: "Menos de 500 ml", scoreValue: "2", order: 1 },
-      { text: "Entre 500 ml e 1 L", scoreValue: "5", order: 2 },
-      { text: "Entre 1 L e 2 L", scoreValue: "8", order: 3 },
-      { text: "Mais de 2 L", scoreValue: "10", order: 4 },
+      { text: "Sim", scoreValue: "SLEEP_SIM", order: 1 },
+      { text: "Mais ou menos", scoreValue: "SLEEP_MEH", order: 2 },
+      { text: "Não dormi bem", scoreValue: "SLEEP_NAO", order: 3 },
     ],
   },
   {
-    text: "Como foi sua última alimentação?",
+    text: "Como está seu emocional hoje?",
     questionType: "MULTIPLE_CHOICE",
     weight: "1.0",
     order: 7,
     options: [
-      { text: "Ainda não me alimentei", scoreValue: "2", order: 1 },
-      { text: "Lanche leve", scoreValue: "5", order: 2 },
-      { text: "Refeição completa", scoreValue: "8", order: 3 },
-      { text: "Tive enjoo/vômito", scoreValue: "1", order: 4 },
+      { text: "Tranquila", scoreValue: "EMO_TRANQUILA", order: 1 },
+      { text: "Um pouco ansiosa", scoreValue: "EMO_ANSI", order: 2 },
+      { text: "Triste / desanimada", scoreValue: "EMO_TRISTE", order: 3 },
+      { text: "Muito abalada hoje", scoreValue: "EMO_MUITO_ABALADA", order: 4 },
     ],
   },
   {
-    text: "Você está sentindo tontura ou falta de ar?",
-    questionType: "YES_NO",
-    weight: "1.5",
+    text: "Você sente segurança para se movimentar hoje?",
+    questionType: "MULTIPLE_CHOICE",
+    weight: "1.0",
     order: 8,
+    options: [
+      { text: "Sim", scoreValue: "SAFETY_SIM", order: 1 },
+      { text: "Um pouco", scoreValue: "SAFETY_POUCO", order: 2 },
+      { text: "Não tenho certeza", scoreValue: "SAFETY_DUVIDA", order: 3 },
+      { text: "Não", scoreValue: "SAFETY_NAO", order: 4 },
+    ],
   },
   {
-    text: "Teve febre ou calafrios nas últimas 24 horas?",
-    questionType: "YES_NO",
-    weight: "2.0",
+    text: "Hoje você sente algum desconforto físico específico que te preocupa?",
+    questionType: "MULTIPLE_CHOICE",
+    weight: "1.0",
     order: 9,
+    options: [
+      { text: "Não", scoreValue: "DISCONFORTO_NAO", order: 1 },
+      { text: "Sim, estou com algum desconforto", scoreValue: "DISCONFORTO_SIM", order: 2 },
+    ],
   },
   {
-    text: "Percebeu sangramentos ou hematomas diferentes do habitual?",
-    questionType: "YES_NO",
-    weight: "2.0",
+    text: "Você gostaria de ter um acompanhamento mais próximo e personalizado?",
+    questionType: "MULTIPLE_CHOICE",
+    weight: "1.0",
     order: 10,
+    options: [
+      { text: "Sim, quero saber mais", scoreValue: "CONSULTORIA_SIM", order: 1 },
+      { text: "Talvez no futuro", scoreValue: "CONSULTORIA_TALVEZ", order: 2 },
+      { text: "Não por enquanto", scoreValue: "CONSULTORIA_NAO", order: 3 },
+    ],
   },
 ];
 
-const DEFAULT_SCORING: Array<Pick<QuizScoringConfig, "minScore" | "maxScore" | "isGoodDay" | "recommendedExerciseType" | "exerciseDescription">> =
-  [
-    {
-      minScore: "0",
-      maxScore: "20",
-      isGoodDay: false,
-      recommendedExerciseType: "Dia de descanso",
-      exerciseDescription: "Hoje não é um bom dia para exercícios. Foque em descanso e recuperação.",
-    },
-    {
-      minScore: "20",
-      maxScore: "40",
-      isGoodDay: true,
-      recommendedExerciseType: "Descanso ativo",
-      exerciseDescription: "Movimentos leves como caminhada devagar ou alongamentos são recomendados.",
-    },
-    {
-      minScore: "40",
-      maxScore: "60",
-      isGoodDay: true,
-      recommendedExerciseType: "Exercício leve",
-      exerciseDescription: "Caminhada leve ou alongamentos suaves por 15 a 20 minutos.",
-    },
-    {
-      minScore: "60",
-      maxScore: "100",
-      isGoodDay: true,
-      recommendedExerciseType: "Exercício moderado",
-      exerciseDescription: "Você pode fazer exercícios moderados como caminhada acelerada ou treino de força leve.",
-    },
-  ];
+const DEFAULT_SCORING: Array<
+  Pick<
+    QuizScoringConfig,
+    "minScore" | "maxScore" | "isGoodDay" | "recommendedExerciseType" | "exerciseDescription"
+  >
+> = [
+  {
+    minScore: "0",
+    maxScore: "33",
+    isGoodDay: true,
+    recommendedExerciseType: "Treinar hoje (força leve + cardio leve + mobilidade)",
+    exerciseDescription: "Perfil liberado para movimento seguro, priorizando força leve, cardio leve e mobilidade.",
+  },
+  {
+    minScore: "34",
+    maxScore: "66",
+    isGoodDay: true,
+    recommendedExerciseType: "Exercício adaptado (cadeira, mobilidade, respiração)",
+    exerciseDescription: "Dia de ajustar intensidade: movimentos sentados, mobilidade suave, alongamentos e respiração.",
+  },
+  {
+    minScore: "67",
+    maxScore: "100",
+    isGoodDay: false,
+    recommendedExerciseType: "Recuperação e descanso ativo",
+    exerciseDescription: "Priorize descanso ativo, respiração e alongamentos leves; hoje é dia de recuperação.",
+  },
+];
 
 async function createDefaultQuiz(db: Db): Promise<Quiz> {
   const { now } = nowDates();
@@ -651,9 +693,9 @@ async function createDefaultQuiz(db: Db): Promise<Quiz> {
 
   const quiz: Quiz = {
     id: quizId,
-    name: "Check de Bem-Estar Diário",
+    name: "Check-in do dia",
     description:
-      "Avaliação rápida para saber se é um bom dia para se exercitar e qual atividade fazer",
+      "Avaliação diária para direcionar se é dia de treinar, adaptar ou recuperar com segurança",
     isActive: true,
     createdBy: null,
     createdAt: now,
@@ -673,14 +715,18 @@ export async function ensureBaselineQuizQuestions(quizId: number) {
   const quiz = await getQuizById(quizId);
   if (!quiz) return;
 
-  const existingTexts = new Set((quiz.questions ?? []).map((q) => q.text));
-  const missing = BASELINE_QUESTIONS.filter((q) => !existingTexts.has(q.text));
-  if (!missing.length) return;
+  const baselineTexts = new Set(BASELINE_QUESTIONS.map((q) => q.text));
+  const matchesBaseline =
+    quiz.questions &&
+    quiz.questions.length === BASELINE_QUESTIONS.length &&
+    quiz.questions.every((q) => baselineTexts.has(q.text));
+
+  if (matchesBaseline) return;
 
   const { now } = nowDates();
   const newQuestions: QuizQuestion[] = [];
 
-  for (const q of missing) {
+  for (const q of BASELINE_QUESTIONS) {
     const questionId = await getNextId(db, "quiz_questions");
     const options: QuizQuestionOption[] = [];
     if (q.options?.length) {
@@ -707,11 +753,29 @@ export async function ensureBaselineQuizQuestions(quizId: number) {
     });
   }
 
+  const scoringConfig: QuizScoringConfig[] = [];
+  for (const sc of DEFAULT_SCORING) {
+    scoringConfig.push({
+      id: await getNextId(db, "quiz_scoring_config"),
+      quizId,
+      minScore: sc.minScore,
+      maxScore: sc.maxScore,
+      isGoodDay: sc.isGoodDay,
+      recommendedExerciseType: sc.recommendedExerciseType,
+      exerciseDescription: sc.exerciseDescription ?? null,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+
   await db.collection<Quiz>("quizzes").updateOne(
     { id: quizId },
     {
-      $push: { questions: { $each: newQuestions } as any },
-      $set: { updatedAt: now },
+      $set: {
+        questions: newQuestions,
+        scoringConfig,
+        updatedAt: now,
+      },
     }
   );
 }

@@ -1,42 +1,130 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { AppHeader } from "@/components/AppHeader";
 
+type AnamnesisQuestion = {
+  id: number;
+  text: string;
+  options: string[];
+};
+
 export default function AnamnesisPage() {
   const { user, loading } = useAuth({ redirectOnUnauthenticated: true });
   const [, navigate] = useLocation();
 
-  const [age, setAge] = useState<number | undefined>();
-  const [mainDiagnosis, setMainDiagnosis] = useState("");
-  const [cancerType, setCancerType] = useState("");
-  const [metastasis, setMetastasis] = useState("");
-  const [metastasisLocation, setMetastasisLocation] = useState("");
-  const [chemotherapy, setChemotherapy] = useState<boolean | null>(null);
-  const [radiotherapy, setRadiotherapy] = useState<boolean | null>(null);
-  const [hormoneTherapy, setHormoneTherapy] = useState<boolean | null>(null);
-  const [surgery, setSurgery] = useState("");
-  const [surgeryWhen, setSurgeryWhen] = useState("");
-  const [painScore, setPainScore] = useState<number | undefined>();
-  const [fatiguePerceived, setFatiguePerceived] = useState("");
-  const [neuropathy, setNeuropathy] = useState<boolean | null>(null);
-  const [lymphedema, setLymphedema] = useState<boolean | null>(null);
-  const [dizziness, setDizziness] = useState<boolean | null>(null);
-  const [fractureHistory, setFractureHistory] = useState<boolean | null>(null);
-  const [thrombosisHistory, setThrombosisHistory] = useState<boolean | null>(null);
-  const [canStandUp, setCanStandUp] = useState<boolean | null>(null);
-  const [canWalk10Min, setCanWalk10Min] = useState<boolean | null>(null);
-  const [exercisedBefore, setExercisedBefore] = useState<boolean | null>(null);
-  const [fearOrTrauma, setFearOrTrauma] = useState("");
-  const [treatmentPhase, setTreatmentPhase] = useState("");
-  const [treatmentStage, setTreatmentStage] = useState("");
-  const [observations, setObservations] = useState("");
+  const questions: AnamnesisQuestion[] = useMemo(
+    () => [
+      {
+        id: 1,
+        text: "Seu médico ou equipe de saúde já comentou que o exercício físico pode fazer parte do seu tratamento?",
+        options: ["Sim, foi orientado", "Não comentou, mas não proibiu", "Já ouvi opiniões diferentes", "Não, nunca falaram sobre isso"],
+      },
+      {
+        id: 2,
+        text: "Em que fase do tratamento você está agora?",
+        options: [
+          "Antes de iniciar quimioterapia ou radioterapia",
+          "Em quimioterapia",
+          "Em radioterapia",
+          "Em hormonioterapia",
+          "Em pós-cirúrgico",
+          "Em acompanhamento / remissão",
+        ],
+      },
+      {
+        id: 3,
+        text: "Você realizou alguma cirurgia relacionada ao câncer recentemente?",
+        options: ["Não", "Sim, há menos de 30 dias", "Sim, entre 1 e 3 meses", "Sim, há mais de 3 meses"],
+      },
+      {
+        id: 4,
+        text: "Você possui alguma restrição médica atual para esforços físicos?",
+        options: ["Não", "Sim, restrições leves", "Sim, restrições importantes", "Não sei informar"],
+      },
+      {
+        id: 5,
+        text: "Hoje, o que mais te impede ou te dá medo de se movimentar?",
+        options: [
+          "Medo de piorar meu estado de saúde",
+          "Cansaço excessivo",
+          "Dor",
+          "Enjoo / mal-estar",
+          "Falta de orientação clara",
+          "Insegurança sobre o que é permitido",
+          "Já tentei antes e não me senti bem",
+        ],
+      },
+      {
+        id: 6,
+        text: "Você sente algum desses sintomas com frequência?",
+        options: ["Fadiga", "Dor", "Enjoo", "Falta de ar", "Tontura", "Fraqueza", "Inchaço", "Nenhum desses"],
+      },
+      {
+        id: 7,
+        text: "Como você se sente fisicamente hoje?",
+        options: ["Me sinto bem e com energia", "Me sinto mais cansada(o) que o normal", "Me sinto fraca(o)", "Me sinto muito debilitada(o)"],
+      },
+      {
+        id: 8,
+        text: "Antes do diagnóstico, você tinha o hábito de se exercitar?",
+        options: ["Sim, regularmente", "Às vezes", "Raramente", "Nunca"],
+      },
+      {
+        id: 9,
+        text: "Depois do diagnóstico, você tentou se exercitar em algum momento?",
+        options: ["Sim, e me senti bem", "Sim, mas fiquei insegura(o)", "Sim, mas tive sintomas ruins", "Não tentei por medo", "Não tentei por falta de orientação"],
+      },
+      {
+        id: 10,
+        text: "Você sente que hoje está mais sedentária(o) do que gostaria?",
+        options: ["Sim", "Não", "Às vezes"],
+      },
+      {
+        id: 11,
+        text: "O que você mais gostaria de ter neste momento?",
+        options: [
+          "Alguém dizendo claramente se posso me exercitar hoje",
+          "Um treino seguro, curto e adaptado ao meu dia",
+          "Orientação para saber quando descansar sem culpa",
+          "Mais confiança no meu corpo",
+          "Todas as alternativas acima",
+        ],
+      },
+      {
+        id: 12,
+        text: "Se existisse um sistema que avalia como você está hoje e te orienta se é dia de treinar, adaptar ou descansar, isso ajudaria você?",
+        options: ["Sim, muito", "Sim, um pouco", "Talvez", "Não"],
+      },
+      {
+        id: 13,
+        text: "Qual frase mais representa você hoje?",
+        options: [
+          "“Tenho medo de fazer algo errado.”",
+          "“Quero me cuidar, mas não sei por onde começar.”",
+          "“Estou cansada(o) de tanta informação confusa.”",
+          "“Quero fazer o melhor pelo meu corpo, com segurança.”",
+        ],
+      },
+      {
+        id: 14,
+        text: "Você acredita que o exercício físico pode ajudar no seu tratamento e na sua qualidade de vida, se feito da forma certa?",
+        options: ["Sim", "Talvez", "Nunca pensei nisso"],
+      },
+      {
+        id: 15,
+        text: "Você gostaria de ter um acompanhamento individual com uma profissional especializada para analisar seu caso, seus sintomas e te orientar de forma personalizada?",
+        options: ["Sim, gostaria de saber mais", "Talvez, dependendo do formato", "No momento, prefiro apenas o aplicativo", "Não"],
+      },
+    ],
+    []
+  );
+
+  const [answers, setAnswers] = useState<Record<number, string>>({});
 
   const completeMutation = trpc.patients.completeAnamnesis.useMutation({
     onSuccess: () => {
@@ -51,36 +139,28 @@ export default function AnamnesisPage() {
   if (loading || !user) return null;
   if (user.role !== "PATIENT") return null;
 
+  const handleAnswer = (questionId: number, option: string) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: option }));
+  };
+
   const handleSubmit = () => {
-    if (!mainDiagnosis) {
-      toast.error("Preencha o diagnóstico principal");
+    const missing = questions.find((q) => !answers[q.id]);
+    if (missing) {
+      toast.error("Responda todas as perguntas da anamnese");
       return;
     }
+
+    const treatmentStage = answers[2];
+    const interest = answers[15];
+
     completeMutation.mutate({
-      age,
-      mainDiagnosis,
-      cancerType,
+      answers: questions.map((q) => ({
+        questionNumber: q.id,
+        questionText: q.text,
+        answer: answers[q.id],
+      })),
       treatmentStage,
-      metastasis,
-      metastasisLocation,
-      chemotherapy: chemotherapy ?? undefined,
-      radiotherapy: radiotherapy ?? undefined,
-      hormoneTherapy: hormoneTherapy ?? undefined,
-      surgery,
-      surgeryWhen,
-      painScore,
-      fatiguePerceived,
-      neuropathy: neuropathy ?? undefined,
-      lymphedema: lymphedema ?? undefined,
-      dizziness: dizziness ?? undefined,
-      fractureHistory: fractureHistory ?? undefined,
-      thrombosisHistory: thrombosisHistory ?? undefined,
-      canStandUp: canStandUp ?? undefined,
-      canWalk10Min: canWalk10Min ?? undefined,
-      exercisedBefore: exercisedBefore ?? undefined,
-      fearOrTrauma,
-      treatmentPhase,
-      observations,
+      interest,
     });
   };
 
@@ -91,137 +171,32 @@ export default function AnamnesisPage() {
         <div className="max-w-5xl mx-auto">
           <Card className="border-0 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-2xl text-pink-600">Anamnese clínica</CardTitle>
-              <p className="text-gray-700 text-sm">
-                Preencha uma única vez para personalizar o algoritmo e os treinos seguros.
-              </p>
+              <CardTitle className="text-2xl text-pink-600">Anamnese inicial (15 perguntas)</CardTitle>
+              <p className="text-gray-700 text-sm">Use as respostas para definir o perfil de segurança e o check-in diário.</p>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-3 md:grid-cols-2">
-                <Input
-                  placeholder="Idade"
-                  value={age ?? ""}
-                  onChange={e => setAge(Number(e.target.value) || undefined)}
-                />
-                <Input
-                  placeholder="Diagnóstico principal"
-                  value={mainDiagnosis}
-                  onChange={e => setMainDiagnosis(e.target.value)}
-                />
-                <Input
-                  placeholder="Tipo de câncer"
-                  value={cancerType}
-                  onChange={e => setCancerType(e.target.value)}
-                />
-                <Input
-                  placeholder="Fase do tratamento (pré-quimio, quimio ativa, radio, hormônio, pós-cirurgia, vigilância)"
-                  value={treatmentPhase}
-                  onChange={e => setTreatmentPhase(e.target.value)}
-                />
-                <Input
-                  placeholder="Metástase (sim/não/não sabe)"
-                  value={metastasis}
-                  onChange={e => setMetastasis(e.target.value)}
-                />
-                <Input
-                  placeholder="Local da metástase (óssea, visceral, não sabe)"
-                  value={metastasisLocation}
-                  onChange={e => setMetastasisLocation(e.target.value)}
-                />
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-2">
-                <Input
-                  placeholder="Cirurgia (qual)"
-                  value={surgery}
-                  onChange={e => setSurgery(e.target.value)}
-                />
-                <Input
-                  placeholder="Quando foi a cirurgia?"
-                  value={surgeryWhen}
-                  onChange={e => setSurgeryWhen(e.target.value)}
-                />
-                <Input
-                  placeholder="Dor atual (0 a 10)"
-                  value={painScore ?? ""}
-                  onChange={e => setPainScore(Number(e.target.value) || undefined)}
-                />
-                <Input
-                  placeholder="Fadiga percebida"
-                  value={fatiguePerceived}
-                  onChange={e => setFatiguePerceived(e.target.value)}
-                />
-              </div>
-
-              <div className="grid gap-2 md:grid-cols-3">
-                <Input
-                  placeholder="Quimioterapia (sim/não)"
-                  value={chemotherapy === null ? "" : chemotherapy ? "sim" : "não"}
-                  onChange={e => setChemotherapy(e.target.value.toLowerCase() === "sim")}
-                />
-                <Input
-                  placeholder="Radioterapia (sim/não)"
-                  value={radiotherapy === null ? "" : radiotherapy ? "sim" : "não"}
-                  onChange={e => setRadiotherapy(e.target.value.toLowerCase() === "sim")}
-                />
-                <Input
-                  placeholder="Hormonioterapia (sim/não)"
-                  value={hormoneTherapy === null ? "" : hormoneTherapy ? "sim" : "não"}
-                  onChange={e => setHormoneTherapy(e.target.value.toLowerCase() === "sim")}
-                />
-                <Input
-                  placeholder="Neuropatia (sim/não)"
-                  value={neuropathy === null ? "" : neuropathy ? "sim" : "não"}
-                  onChange={e => setNeuropathy(e.target.value.toLowerCase() === "sim")}
-                />
-                <Input
-                  placeholder="Linfedema (sim/não)"
-                  value={lymphedema === null ? "" : lymphedema ? "sim" : "não"}
-                  onChange={e => setLymphedema(e.target.value.toLowerCase() === "sim")}
-                />
-                <Input
-                  placeholder="Tontura frequente (sim/não)"
-                  value={dizziness === null ? "" : dizziness ? "sim" : "não"}
-                  onChange={e => setDizziness(e.target.value.toLowerCase() === "sim")}
-                />
-                <Input
-                  placeholder="Histórico de fratura (sim/não)"
-                  value={fractureHistory === null ? "" : fractureHistory ? "sim" : "não"}
-                  onChange={e => setFractureHistory(e.target.value.toLowerCase() === "sim")}
-                />
-                <Input
-                  placeholder="Histórico de trombose (sim/não)"
-                  value={thrombosisHistory === null ? "" : thrombosisHistory ? "sim" : "não"}
-                  onChange={e => setThrombosisHistory(e.target.value.toLowerCase() === "sim")}
-                />
-                <Input
-                  placeholder="Levanta da cadeira sem apoio? (sim/não)"
-                  value={canStandUp === null ? "" : canStandUp ? "sim" : "não"}
-                  onChange={e => setCanStandUp(e.target.value.toLowerCase() === "sim")}
-                />
-                <Input
-                  placeholder="Caminha 5–10 minutos? (sim/não)"
-                  value={canWalk10Min === null ? "" : canWalk10Min ? "sim" : "não"}
-                  onChange={e => setCanWalk10Min(e.target.value.toLowerCase() === "sim")}
-                />
-                <Input
-                  placeholder="Fazia exercício antes do diagnóstico? (sim/não)"
-                  value={exercisedBefore === null ? "" : exercisedBefore ? "sim" : "não"}
-                  onChange={e => setExercisedBefore(e.target.value.toLowerCase() === "sim")}
-                />
-              </div>
-
-              <Textarea
-                placeholder="Medo/trauma/insegurança com exercício"
-                value={fearOrTrauma}
-                onChange={e => setFearOrTrauma(e.target.value)}
-              />
-
-              <Textarea
-                placeholder="Observações adicionais"
-                value={observations}
-                onChange={e => setObservations(e.target.value)}
-              />
+            <CardContent className="space-y-6">
+              {questions.map((question) => (
+                <div key={question.id} className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="h-7 w-7 rounded-full bg-pink-100 text-pink-700 flex items-center justify-center text-sm font-semibold">
+                      {question.id}
+                    </span>
+                    <p className="font-semibold text-gray-900">{question.text}</p>
+                  </div>
+                  <div className="grid gap-2 md:grid-cols-2">
+                    {question.options.map((option) => (
+                      <Button
+                        key={option}
+                        onClick={() => handleAnswer(question.id, option)}
+                        variant={answers[question.id] === option ? "default" : "outline"}
+                        className={`justify-start text-left ${answers[question.id] === option ? "bg-pink-500 hover:bg-pink-600 text-white" : "border-pink-200 text-gray-800"}`}
+                      >
+                        {option}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              ))}
               <Button
                 onClick={handleSubmit}
                 disabled={completeMutation.isPending}
