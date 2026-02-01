@@ -159,7 +159,12 @@ export default function QuizPage() {
                 </div>
 
                 <Button
-                  onClick={() => navigate("/exercises")}
+                  onClick={() =>
+                    window.open(
+                      "https://www.youtube.com/playlist?list=PL3U7uv4DxYI1xHPCAzbFiV9RysgdWP_vK",
+                      "_blank"
+                    )
+                  }
                   className="w-full bg-pink-500 hover:bg-pink-600 text-white py-6 text-lg font-semibold"
                 >
                   {ctaLabel}
