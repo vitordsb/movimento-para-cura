@@ -220,7 +220,7 @@ export default function PatientDashboard() {
             <Button
               variant="outline"
               onClick={() => navigate("/history")}
-              className="h-auto py-4 flex flex-col items-center gap-2"
+                className="!h-auto min-h-[100px] py-4 flex flex-col items-center gap-2"
               disabled={needsAnamnesis}
             >
               <span className="text-2xl">📊</span>
@@ -230,7 +230,7 @@ export default function PatientDashboard() {
           <Button
             variant="outline"
             onClick={() => navigate("/exercises")}
-            className="h-auto py-4 flex flex-col items-center gap-2"
+              className="!h-auto min-h-[100px] py-4 flex flex-col items-center gap-2"
             disabled={needsAnamnesis}
           >
             <span className="text-2xl">💪</span>
