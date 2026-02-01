@@ -2,32 +2,26 @@ import { describe, it, expect } from "vitest";
 
 describe("Authentication", () => {
   describe("Password Validation", () => {
-    it("should enforce minimum 8 characters", () => {
-      const shortPassword = "Short1";
+    it("should enforce minimum 6 characters", () => {
+      const shortPassword = "Short";
       // This would be tested through the registration endpoint
-      expect(shortPassword.length).toBeLessThan(8);
+      expect(shortPassword.length).toBeLessThan(6);
     });
 
-    it("should require uppercase letter", () => {
-      const noUppercase = "password123";
-      expect(/[A-Z]/.test(noUppercase)).toBe(false);
+    it("should require at least one letter", () => {
+      const noLetter = "123456";
+      expect(/[a-zA-Z]/.test(noLetter)).toBe(false);
     });
 
-    it("should require lowercase letter", () => {
-      const noLowercase = "PASSWORD123";
-      expect(/[a-z]/.test(noLowercase)).toBe(false);
-    });
-
-    it("should require number", () => {
+    it("should require at least one number", () => {
       const noNumber = "Password";
       expect(/[0-9]/.test(noNumber)).toBe(false);
     });
 
     it("should accept valid password", () => {
-      const validPassword = "Password123";
-      expect(validPassword.length).toBeGreaterThanOrEqual(8);
-      expect(/[A-Z]/.test(validPassword)).toBe(true);
-      expect(/[a-z]/.test(validPassword)).toBe(true);
+      const validPassword = "pass123";
+      expect(validPassword.length).toBeGreaterThanOrEqual(6);
+      expect(/[a-zA-Z]/.test(validPassword)).toBe(true);
       expect(/[0-9]/.test(validPassword)).toBe(true);
     });
   });

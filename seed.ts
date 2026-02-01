@@ -25,8 +25,8 @@ async function verifyPassword(stored: string | null | undefined, password: strin
 async function seed() {
   console.log("🌱 Seeding database...");
 
-  if (!ENV.databaseUrl) {
-    console.error("❌ DATABASE_URL não está definido no .env");
+  if (!ENV.mongoUri) {
+    console.error("❌ MONGO_URI não está definido no .env");
     process.exit(1);
   }
 

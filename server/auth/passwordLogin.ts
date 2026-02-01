@@ -16,8 +16,7 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-
-const MIN_PASSWORD_LEN = 8; // Increased from 6 for better security
+const MIN_PASSWORD_LEN = 6;
 
 async function hashPassword(password: string) {
   const buffer = await Scrypt.kdf(password, { logN: 15, r: 8, p: 1 });
@@ -41,11 +40,10 @@ function normalizeEmail(email: string) {
 const normalizeRole = (role?: string) =>
   role === "ONCOLOGIST" ? "ONCOLOGIST" : "PATIENT";
 
-// Stronger password validation
+// Relaxed password validation (letters and numbers only)
 const passwordSchema = z.string()
   .min(MIN_PASSWORD_LEN, `Senha deve ter no mínimo ${MIN_PASSWORD_LEN} caracteres`)
-  .regex(/[A-Z]/, "Senha deve conter pelo menos uma letra maiúscula")
-  .regex(/[a-z]/, "Senha deve conter pelo menos uma letra minúscula")
+  .regex(/[a-zA-Z]/, "Senha deve conter pelo menos uma letra")
   .regex(/[0-9]/, "Senha deve conter pelo menos um número");
 
 const registerSchema = z.object({
