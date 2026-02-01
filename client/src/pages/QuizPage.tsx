@@ -376,7 +376,7 @@ export default function QuizPage() {
       </div>
       {/* Paywall Modal */}
       <Dialog open={showPaywall} onOpenChange={setShowPaywall}>
-        <DialogContent className="xl:min-w-[900px] 2xl:min-w-[1100px] w-[98vw] bg-white">
+        <DialogContent className="xl:min-w-[900px] 2xl:min-w-[1100px] w-[98vw] !bg-white">
           <DialogHeader className="2xl:min-w-[700px] xl:min-w-[600px]">
             <DialogTitle className="2xl:text-2xl xl:text-md text-pink-600">Desbloqueie seu resultado</DialogTitle>
             <DialogDescription className="2xl:text-base xl:text-sm text-gray-700">
