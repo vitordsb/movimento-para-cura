@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { adminProcedure, publicProcedure, router } from "../api/trpc";
+import { adminProcedure, publicProcedure, patientProcedure, router } from "../api/trpc";
 import {
   getAllPatients,
   getPatientProfile,
@@ -7,6 +7,7 @@ import {
   getUserById,
   updateUserById,
 } from "../db";
+import { UnauthorizedError } from "../errors";
 
 export const patientsRouter = router({
   /**
@@ -89,7 +90,7 @@ export const patientsRouter = router({
   /**
    * Complete anamnesis (patient only, sets flag and stores info)
    */
-  completeAnamnesis: publicProcedure
+  completeAnamnesis: patientProcedure
     .input(
       z.object({
         answers: z.array(
@@ -104,10 +105,6 @@ export const patientsRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      if (!ctx.user || ctx.user.role !== "PATIENT") {
-        throw new Error("Unauthorized");
-      }
-
       const observations = {
         anamnesisVersion: "v2",
         answers: input.answers,

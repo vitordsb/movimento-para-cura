@@ -1,1 +1,0 @@
-ALTER TABLE `users` ADD `hasActivePlan` boolean DEFAULT false NOT NULL;

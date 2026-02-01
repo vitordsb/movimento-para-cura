@@ -101,7 +101,7 @@ export default function PatientDashboard() {
         </Card>
 
         {/* Boas-vindas */}
-        <div>
+          <div role="status" aria-live="polite">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Olá, {user?.name}! 👋</h1>
           <p className="text-gray-600">
             {todayResponse
@@ -112,16 +112,16 @@ export default function PatientDashboard() {
 
         {/* Today's Status */}
         {todayResponse ? (
-          <Card className="border-0 shadow-lg">
+            <Card className="border-0 shadow-lg" role="region" aria-label="Avaliação de hoje">
             <CardHeader>
               <CardTitle>Avaliação de hoje</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-4">
                 {todayResponse.isGoodDayForExercise ? (
-                  <CheckCircle className="w-12 h-12 text-green-500" />
+                    <CheckCircle className="w-12 h-12 text-green-500" aria-hidden="true" />
                 ) : (
-                  <XCircle className="w-12 h-12 text-gray-400" />
+                      <XCircle className="w-12 h-12 text-gray-400" aria-hidden="true" />
                 )}
                 <div>
                   <p className="text-lg font-semibold text-gray-900">
@@ -140,7 +140,7 @@ export default function PatientDashboard() {
             </CardContent>
           </Card>
         ) : (
-          <Card className="border-0 shadow-lg bg-gradient-to-r from-pink-50 to-green-50">
+              <Card className="border-0 shadow-lg bg-gradient-to-r from-pink-50 to-green-50" role="region" aria-label="Checagem pendente">
             <CardHeader>
               <CardTitle>Checagem de bem-estar de hoje</CardTitle>
               <CardDescription>
@@ -150,13 +150,14 @@ export default function PatientDashboard() {
             <CardContent>
               <Button
                 onClick={() => navigate("/quiz")}
-                className="w-full bg-pink-500 hover:bg-pink-600 text-white py-6 text-lg font-semibold"
+                    className="w-full bg-pink-500 hover:bg-pink-600 text-white py-6 text-lg font-semibold h-auto"
                 disabled={needsAnamnesis}
+                    aria-label="Iniciar questionário diário"
               >
                 Fazer questionário diário
               </Button>
               {needsAnamnesis && (
-                <p className="text-xs text-pink-700 mt-2">
+                    <p className="text-xs text-pink-700 mt-2" role="alert">
                   Complete sua anamnese para liberar o check-in diário.
                 </p>
               )}
@@ -165,10 +166,10 @@ export default function PatientDashboard() {
         )}
 
         {/* Last 7 Days */}
-        <Card className="border-0 shadow-lg">
+          <Card className="border-0 shadow-lg" role="region" aria-labelledby="history-title">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
+              <CardTitle id="history-title" className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5" aria-hidden="true" />
               Últimos 7 dias
             </CardTitle>
             <CardDescription>
@@ -176,12 +177,23 @@ export default function PatientDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-2 justify-between">
-              {last7Days.map((day, idx) => (
-                <div key={idx} className="flex flex-col items-center gap-2">
-                  <div className="text-xs text-gray-600">{format(day.date, "EEE")}</div>
+              {/* Semantic list for screen readers + Grid for layout */}
+              <ol className="grid grid-cols-7 gap-1 sm:gap-2">
+                {last7Days.map((day, idx) => {
+                  const label = day.response
+                    ? day.response.isGoodDayForExercise
+                      ? "Bom dia"
+                      : "Dia de descanso"
+                    : "Sem registro";
+
+                  return (
+                    <li key={idx} className="flex flex-col items-center gap-2">
+                      <div className="text-xs text-gray-600" aria-hidden="true">{format(day.date, "EEE")}</div>
                   <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${
+                      role="img"
+                      aria-label={`${format(day.date, "dd/MM")}: ${label}`}
+                      title={`${format(day.date, "dd/MM")}: ${label}`}
+                      className={`w-full aspect-square max-w-[3rem] min-w-[2rem] rounded-lg flex items-center justify-center text-lg transition-colors ${
                       day.response
                         ? day.response.isGoodDayForExercise
                           ? "bg-green-100 text-green-600"
@@ -191,9 +203,13 @@ export default function PatientDashboard() {
                   >
                     {day.response ? (day.response.isGoodDayForExercise ? "✓" : "—") : "?"}
                   </div>
-                  <div className="text-xs text-gray-500">{format(day.date, "d")}</div>
-                </div>
-              ))}
+                    <div className="text-xs text-gray-500" aria-hidden="true">{format(day.date, "d")}</div>
+                  </li>
+                );
+              })}
+              </ol>
+              <div className="sr-only">
+                Este gráfico mostra o histórico dos últimos 7 dias. Dias com check são dias bons para exercícios.
             </div>
           </CardContent>
         </Card>

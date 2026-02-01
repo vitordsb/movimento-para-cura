@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { publicProcedure, router } from "../api/trpc";
+import { publicProcedure, patientProcedure, oncologistProcedure, router } from "../api/trpc";
 import {
   getTodayResponse,
   getPatientResponses,
@@ -85,7 +85,7 @@ export const responsesRouter = router({
   /**
    * Submit daily quiz response
    */
-  submitDaily: publicProcedure
+  submitDaily: patientProcedure
     .input(
       z.object({
         quizId: z.number(),
@@ -98,9 +98,6 @@ export const responsesRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      if (!ctx.user || ctx.user.role !== "PATIENT") {
-        throw new Error("Only patients can submit quiz responses");
-      }
 
       // Check if patient already responded today
       const existingResponse = await getTodayResponse(ctx.user.id, input.quizId);
@@ -153,7 +150,7 @@ export const responsesRouter = router({
   /**
    * Get specific patient's history (admin only)
    */
-  getPatientHistory: publicProcedure
+  getPatientHistory: oncologistProcedure
     .input(
       z.object({
         patientId: z.number(),
@@ -161,9 +158,6 @@ export const responsesRouter = router({
       })
     )
     .query(async ({ input, ctx }) => {
-      if (ctx.user?.role !== "ONCOLOGIST") {
-        throw new Error("Only oncologists can view patient history");
-      }
 
       return await getPatientResponses(input.patientId, input.limit);
     }),
@@ -171,12 +165,9 @@ export const responsesRouter = router({
   /**
    * Get today's response for current patient
    */
-  getToday: publicProcedure
+  getToday: patientProcedure
     .input(z.object({ quizId: z.number() }))
     .query(async ({ input, ctx }) => {
-      if (!ctx.user || ctx.user.role !== "PATIENT") {
-        throw new Error("Only patients can view their responses");
-      }
 
       const response = await getTodayResponse(ctx.user.id, input.quizId);
       return response ?? null;

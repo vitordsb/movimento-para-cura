@@ -211,6 +211,7 @@ export default function AuthPage() {
                   {isRegister && (
                     <Input
                       placeholder="Nome de usuário"
+                      aria-label="Nome de usuário"
                       value={name}
                       onChange={e => setName(e.target.value)}
                       disabled={pending}
@@ -218,6 +219,7 @@ export default function AuthPage() {
                   )}
                   <Input
                     placeholder="Email"
+                    aria-label="Email"
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
@@ -225,6 +227,7 @@ export default function AuthPage() {
                   />
                   <Input
                     placeholder="Senha"
+                    aria-label="Senha"
                     type="password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}

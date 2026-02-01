@@ -43,3 +43,24 @@ export const adminProcedure = t.procedure.use(
     });
   }),
 );
+
+// Patient-only procedure
+export const patientProcedure = t.procedure.use(
+  t.middleware(async opts => {
+    const { ctx, next } = opts;
+
+    if (!ctx.user || ctx.user.role !== 'PATIENT') {
+      throw new TRPCError({ code: "FORBIDDEN", message: "Apenas pacientes podem acessar este recurso" });
+    }
+
+    return next({
+      ctx: {
+        ...ctx,
+        user: ctx.user,
+      },
+    });
+  }),
+);
+
+// Oncologist-only procedure (alias for adminProcedure for clarity)
+export const oncologistProcedure = adminProcedure;

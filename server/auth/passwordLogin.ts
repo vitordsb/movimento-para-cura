@@ -1,23 +1,37 @@
 import type { Express, Request, Response } from "express";
-import { randomBytes, pbkdf2Sync, timingSafeEqual } from "crypto";
+// @ts-ignore: Library has incorrect types (d.ts mismatch with esm export)
+import Scrypt from "scrypt-kdf";
+import { z } from "zod";
 import * as db from "../db";
 import { signAuthToken } from "./jwt";
 import { ONE_YEAR_MS } from "../../shared/const";
+import rateLimit from "express-rate-limit";
 
-const MIN_PASSWORD_LEN = 6;
+// Rate limiter for auth endpoints - prevent brute force attacks
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 requests per windowMs
+  message: "Muitas tentativas de login. Tente novamente em 15 minutos.",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
-function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const hash = pbkdf2Sync(password, salt, 100_000, 64, "sha512").toString("hex");
-  return `${salt}:${hash}`;
+
+const MIN_PASSWORD_LEN = 8; // Increased from 6 for better security
+
+async function hashPassword(password: string) {
+  const buffer = await Scrypt.kdf(password, { logN: 15, r: 8, p: 1 });
+  return Buffer.from(buffer).toString("base64");
 }
 
-function verifyPassword(stored: string | null | undefined, password: string) {
+async function verifyPassword(stored: string | null | undefined, password: string) {
   if (!stored) return false;
-  const [salt, hash] = stored.split(":");
-  if (!salt || !hash) return false;
-  const testHash = pbkdf2Sync(password, salt, 100_000, 64, "sha512").toString("hex");
-  return timingSafeEqual(Buffer.from(hash, "hex"), Buffer.from(testHash, "hex"));
+  try {
+    const buffer = Buffer.from(stored, "base64");
+    return await Scrypt.verify(buffer, password);
+  } catch {
+    return false;
+  }
 }
 
 function normalizeEmail(email: string) {
@@ -27,61 +41,50 @@ function normalizeEmail(email: string) {
 const normalizeRole = (role?: string) =>
   role === "ONCOLOGIST" ? "ONCOLOGIST" : "PATIENT";
 
+// Stronger password validation
+const passwordSchema = z.string()
+  .min(MIN_PASSWORD_LEN, `Senha deve ter no mínimo ${MIN_PASSWORD_LEN} caracteres`)
+  .regex(/[A-Z]/, "Senha deve conter pelo menos uma letra maiúscula")
+  .regex(/[a-z]/, "Senha deve conter pelo menos uma letra minúscula")
+  .regex(/[0-9]/, "Senha deve conter pelo menos um número");
+
+const registerSchema = z.object({
+  email: z.string().email("Email inválido"),
+  password: passwordSchema,
+  name: z.string().min(1, "Nome é obrigatório"),
+  role: z.string().optional(),
+  planChoice: z.enum(["free", "monthly", "annual"]).optional(),
+});
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+
 export function registerPasswordAuthRoutes(app: Express) {
-  // Ensure default admin exists
-  const ensureAdmin = async () => {
-    const adminEmail = "admin@oncoliving.com.br";
-    const adminPassword = "senha123";
-    const existing = await db.getUserByEmail(adminEmail);
-    if (!existing) {
-      const passwordHash = hashPassword(adminPassword);
-      await db.createUser({
-        openId: adminEmail,
-        email: adminEmail,
-        name: "Admin OncoLiving",
-        passwordHash,
-        role: "ONCOLOGIST",
-        loginMethod: "password",
-        hasActivePlan: true,
-        hasCompletedAnamnesis: true,
-      });
-    }
-  };
-  ensureAdmin().catch(err => console.error("[Auth] Falha ao garantir admin padrão", err));
-
-  // Registration
-  app.post("/api/auth/register", async (req: Request, res: Response) => {
-    const { email, password, name, role, planChoice } = req.body ?? {};
-    const emailInput = typeof email === "string" ? email.trim() : "";
-    const nameInput = typeof name === "string" ? name.trim() : "";
-    const passwordValue = typeof password === "string" ? password : "";
-    const plan = typeof planChoice === "string" ? planChoice : "";
-
-    if (!emailInput || !passwordValue) {
-      return res.status(400).json({ error: "Email e senha são obrigatórios" });
-    }
-    if (!nameInput) {
-      return res.status(400).json({ error: "Nome de usuário é obrigatório" });
-    }
-    if (!plan) {
-      return res.status(400).json({ error: "Selecione um plano para criar sua conta" });
-    }
-    if (passwordValue.length < MIN_PASSWORD_LEN) {
-      return res
-        .status(400)
-        .json({ error: `A senha deve ter pelo menos ${MIN_PASSWORD_LEN} caracteres` });
+  // Registration with rate limiting
+  app.post("/api/auth/register", authLimiter, async (req: Request, res: Response) => {
+    const parse = registerSchema.safeParse(req.body);
+    if (!parse.success) {
+      return res.status(400).json({ error: "Dados inválidos: " + parse.error.issues.map(i => i.message).join(", ") });
     }
 
-    const normalizedEmail = normalizeEmail(emailInput);
-    const displayName = nameInput;
-    const passwordHash = hashPassword(passwordValue);
-    const hasActivePlan = plan === "monthly" || plan === "annual" || plan === "free";
+    const { email, password, name, role, planChoice } = parse.data;
+
+    if (!planChoice && role !== "ONCOLOGIST") { // Oncologists might not need plan selection in this flow
+      // For now, enforcing plan for everyone or just check frontend logic
+      if (!planChoice) return res.status(400).json({ error: "Selecione um plano" });
+    }
+
+    const normalizedEmail = normalizeEmail(email);
+    const passwordHash = await hashPassword(password);
+    const hasActivePlan = planChoice === "monthly" || planChoice === "annual" || planChoice === "free";
     const planType =
-      plan === "monthly"
+      planChoice === "monthly"
         ? "PAID_MONTHLY"
-        : plan === "annual"
+        : planChoice === "annual"
         ? "PAID_ANNUAL"
-        : plan === "free"
+          : planChoice === "free"
         ? "FREE_LIMITED"
         : "TRIAL_LIMITED";
     const userRole = normalizeRole(role);
@@ -95,7 +98,7 @@ export function registerPasswordAuthRoutes(app: Express) {
       await db.createUser({
         openId: normalizedEmail,
         email: normalizedEmail,
-        name: displayName,
+        name,
         passwordHash,
         role: userRole,
         loginMethod: "password",
@@ -111,17 +114,19 @@ export function registerPasswordAuthRoutes(app: Express) {
     }
   });
 
-  // Login
-  app.post("/api/auth/login", async (req: Request, res: Response) => {
-    const { email, password } = req.body ?? {};
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email e senha são obrigatórios" });
+  // Login with rate limiting
+  app.post("/api/auth/login", authLimiter, async (req: Request, res: Response) => {
+    const parse = loginSchema.safeParse(req.body);
+    if (!parse.success) {
+      return res.status(400).json({ error: "Email ou senha inválidos" });
     }
 
+    const { email, password } = parse.data;
     const normalizedEmail = normalizeEmail(email);
+
     try {
       const user = await db.getUserByEmail(normalizedEmail);
-      if (!user || !verifyPassword(user.passwordHash ?? undefined, password)) {
+      if (!user || !(await verifyPassword(user.passwordHash ?? undefined, password))) {
         return res.status(401).json({ error: "Credenciais inválidas" });
       }
 
