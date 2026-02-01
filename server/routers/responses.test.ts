@@ -12,6 +12,9 @@ function createPatientContext(userId: number = 1): TrpcContext {
     name: "Test Patient",
     loginMethod: "local",
     role: "PATIENT",
+    hasActivePlan: true,
+    hasCompletedAnamnesis: true,
+    planType: "FREE_LIMITED",
     createdAt: new Date(),
     updatedAt: new Date(),
     lastSignedIn: new Date(),
@@ -39,6 +42,9 @@ describe("responses router", () => {
         name: "Test Oncologist",
         loginMethod: "local",
         role: "ONCOLOGIST",
+        hasActivePlan: true,
+        hasCompletedAnamnesis: false,
+        planType: null,
         createdAt: new Date(),
         updatedAt: new Date(),
         lastSignedIn: new Date(),
@@ -59,7 +65,7 @@ describe("responses router", () => {
         });
         expect.fail("Should have thrown an error");
       } catch (error: any) {
-        expect(error.message).toContain("Only patients can submit");
+        expect(error.message).toContain("Apenas pacientes podem acessar");
       }
     });
 
@@ -79,7 +85,7 @@ describe("responses router", () => {
         });
         expect.fail("Should have thrown an error");
       } catch (error: any) {
-        expect(error.message).toContain("Only patients can submit");
+        expect(error.message).toContain("Apenas pacientes podem acessar");
       }
     });
   });
@@ -121,7 +127,7 @@ describe("responses router", () => {
         await caller.responses.getPatientHistory({ patientId: 2, limit: 30 });
         expect.fail("Should have thrown an error");
       } catch (error: any) {
-        expect(error.message).toContain("Only oncologists can view");
+        expect(error.message).toContain("You do not have required permission");
       }
     });
 
@@ -133,6 +139,9 @@ describe("responses router", () => {
         name: "Test Oncologist",
         loginMethod: "local",
         role: "ONCOLOGIST",
+        hasActivePlan: true,
+        hasCompletedAnamnesis: false,
+        planType: null,
         createdAt: new Date(),
         updatedAt: new Date(),
         lastSignedIn: new Date(),
@@ -164,6 +173,9 @@ describe("responses router", () => {
         name: "Test Oncologist",
         loginMethod: "local",
         role: "ONCOLOGIST",
+        hasActivePlan: true,
+        hasCompletedAnamnesis: false,
+        planType: null,
         createdAt: new Date(),
         updatedAt: new Date(),
         lastSignedIn: new Date(),
@@ -181,7 +193,7 @@ describe("responses router", () => {
         await caller.responses.getToday({ quizId: 1 });
         expect.fail("Should have thrown an error");
       } catch (error: any) {
-        expect(error.message).toContain("Only patients can view");
+        expect(error.message).toContain("Apenas pacientes podem acessar");
       }
     });
 
