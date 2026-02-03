@@ -15,7 +15,7 @@ export default function PatientDashboard() {
   const needsAnamnesis = user?.role === "PATIENT" && user?.hasCompletedAnamnesis === false;
 
   // Get active quiz
-  const { data: activeQuiz, isLoading: quizLoading } = trpc.quizzes.getActive.useQuery();
+  const { data: activeQuiz, isLoading: quizLoading, error: quizError } = trpc.quizzes.getActive.useQuery();
 
   // Get today's response
   const { data: todayResponse } = trpc.responses.getToday.useQuery(
@@ -56,10 +56,23 @@ export default function PatientDashboard() {
             <div className="flex gap-3">
               <AlertCircle className="w-6 h-6 text-amber-600 flex-shrink-0" />
               <div>
-                <h3 className="font-semibold text-amber-900 mb-2">Nenhum questionário ativo</h3>
+                <h3 className="font-semibold text-amber-900 mb-2">
+                  {quizError ? "Erro ao carregar questionário" : "Nenhum questionário ativo"}
+                </h3>
                 <p className="text-amber-800">
-                  Seu oncologista ainda não ativou um questionário. Volte em breve.
+                  {quizError
+                    ? `Ocorreu um problema de conexão: ${quizError.message}`
+                    : "Seu oncologista ainda não ativou um questionário. Volte em breve."}
                 </p>
+                {quizError && (
+                  <Button
+                    variant="outline"
+                    className="mt-4 border-amber-300 text-amber-800 hover:bg-amber-100"
+                    onClick={() => window.location.reload()}
+                  >
+                    Tentar novamente
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>
