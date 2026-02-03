@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,25 @@ export default function AuthPage() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [planChoice, setPlanChoice] = useState<"free" | "monthly" | "annual" | null>(null);
   const [showPlanModal, setShowPlanModal] = useState(false);
+
+  useEffect(() => {
+    // Parse query params manually since wouter useLocation doesn't provide them directly in a parsed way
+    const searchParams = new URLSearchParams(window.location.search);
+    const planParam = searchParams.get("plan");
+
+    if (planParam === "monthly" || planParam === "annual" || planParam === "free") {
+      setPlanChoice(planParam as "monthly" | "annual" | "free");
+      setMode("register");
+      // If it's a paid plan, we might want to ensure the modal isn't needed or show it for confirmation?
+      // Current implementation: if planChoice is set, user just needs to fill form.
+      // Maybe show a toast or something?
+
+      if (planParam !== "free") {
+        // Automatically expand the form if they came from a plan
+        setMode("register");
+      }
+    }
+  }, []);
 
   const isRegister = mode === "register";
   const createPaymentMutation = trpc.subscriptions.createPayment.useMutation();

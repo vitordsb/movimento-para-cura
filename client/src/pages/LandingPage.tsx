@@ -33,10 +33,21 @@ export default function LandingPage() {
   };
 
   const handlePlanClick = (cta: string) => {
-    if (cta.toLowerCase().includes("assinar")) {
-      navigate("/em-desenvolvimento");
+    const lowerCta = cta.toLowerCase();
+
+    if (lowerCta.includes("mensal")) {
+      navigate("/auth?plan=monthly");
       return;
     }
+    if (lowerCta.includes("anual")) {
+      navigate("/auth?plan=annual");
+      return;
+    }
+    if (lowerCta.includes("testar") || lowerCta.includes("grátis")) {
+      navigate("/auth?plan=free");
+      return;
+    }
+
     handleStart();
   };
 
