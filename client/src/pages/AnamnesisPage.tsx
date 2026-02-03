@@ -126,8 +126,10 @@ export default function AnamnesisPage() {
 
   const [answers, setAnswers] = useState<Record<number, string>>({});
 
+  const utils = trpc.useUtils();
   const completeMutation = trpc.patients.completeAnamnesis.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
+      await utils.auth.me.invalidate();
       toast.success("Anamnese registrada! Agora você pode acessar o quiz diário.");
       navigate("/dashboard");
     },
