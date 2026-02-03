@@ -10,7 +10,7 @@ import rateLimit from "express-rate-limit";
 // Rate limiter for auth endpoints - prevent brute force attacks
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 requests per windowMs
+  max: 100, // Relaxed limit to prevent development blocks
   message: "Muitas tentativas de login. Tente novamente em 15 minutos.",
   standardHeaders: true,
   legacyHeaders: false,
