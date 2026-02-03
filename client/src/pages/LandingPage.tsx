@@ -174,29 +174,46 @@ export default function LandingPage() {
                       </div>
           <div className="relative flex flex-col gap-4">
             <div className="absolute -inset-6 rounded-3xl bg-pink-200/40 blur-3xl" />
-            <Card className="relative border-0 shadow-xl overflow-hidden">
-              <CardContent className="p-0">
-                <div className="bg-gradient-to-br from-pink-500 to-green-400 p-8 text-white">
-                  <p className="text-sm uppercase tracking-wide font-semibold">Sobre a profissional</p>
-                  <h2 className="text-3xl font-bold mt-3">Andressa Semionatto</h2>
-                  <div className="mt-4 space-y-3 text-base leading-relaxed">
-                    <p>
-                      Andressa Semionatto é profissional de Educação Física, especialista em exercício físico
-                      para pessoas em tratamento oncológico, com atuação clínica e hospitalar.
-                    </p>
-                    <p>
-                      Há mais de 8 anos, acompanha pacientes durante a quimioterapia, radioterapia e
-                      pós-cirúrgico, no Brasil e no exterior, somando mais de 3.000 pacientes atendidos.
-                    </p>
-                    <p>
-                      Seu trabalho une ciência, prática clínica e sensibilidade humana para ajudar pessoas com
-                      câncer a se movimentarem com segurança, autonomia, qualidade de vida e longevidade,
-                      respeitando o momento do corpo e a atual fase do seu tratamento.
-                    </p>
+            <div className="relative flex flex-col items-center gap-6 mt-4 mb-8">
+              {/* Speech Bubble (Floating Above) */}
+              <div className="relative animate-float w-full z-20">
+                <div className="relative bg-white rounded-2xl p-6 shadow-xl border border-pink-100">
+                  {/* Triangle/Tail pointing DOWN */}
+                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[16px] border-t-white drop-shadow-sm"></div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-pink-600 font-bold mb-1">Sobre a profissional</p>
+                      <h2 className="text-2xl font-bold text-gray-900">Andressa Semionatto</h2>
+                    </div>
+
+                    <div className="space-y-2 text-sm text-gray-700 leading-relaxed max-h-[280px] overflow-y-auto pr-2 custom-scrollbar">
+                      <p>
+                        <span className="font-semibold text-pink-600">Olá! Eu sou a Andressa.</span> Sou profissional de Educação Física, especialista em oncologia clínica e hospitalar.
+                      </p>
+                      <p>
+                        Há mais de 8 anos, acompanho mais de 3.000 pacientes no Brasil e exterior durante seus tratamentos.
+                      </p>
+                      <p>
+                        Criei o Movimento para Cura para unir ciência e sensibilidade, te ajudando a se movimentar com segurança, recuperar sua autonomia e viver com mais qualidade, respeitando cada momento do seu corpo.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+
+              {/* Photo (Centered Below) */}
+              <div className="relative shrink-0 z-10 -mt-2">
+                <div className="absolute inset-0 bg-pink-200 rounded-full blur-2xl opacity-60 scale-110"></div>
+                <div className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-full border-4 border-white shadow-2xl overflow-hidden ring-4 ring-pink-50">
+                  <img
+                    src="/fotoAndressa.jpeg"
+                    alt="Andressa Semionatto"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            </div>
 	            <div className="flex flex-col gap-4 relative z-10">
 	              <Card className="border-pink-100">
 	                <CardContent className="p-4">
