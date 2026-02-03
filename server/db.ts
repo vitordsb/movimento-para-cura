@@ -612,6 +612,16 @@ export async function getPatientResponses(userId: number, limit?: number): Promi
     take: limit,
     include: {
       answers: true,
+      quiz: {
+        include: {
+          questions: {
+            include: {
+              options: true,
+            },
+            orderBy: { order: "asc" },
+          },
+        },
+      },
     },
     orderBy: { responseDate: "desc" },
   });
@@ -619,7 +629,20 @@ export async function getPatientResponses(userId: number, limit?: number): Promi
   return responses.map(r => ({
     ...r,
     totalScore: r.totalScore.toString(),
-  })) as QuizResponse[];
+    quiz: {
+      ...r.quiz,
+      questions: r.quiz.questions.map((q: any) => ({
+        ...q,
+        questionType: q.questionType as QuizQuestionType,
+        weight: q.weight.toString(),
+        options: q.options.map((opt: any) => ({
+          ...opt,
+          scoreValue: opt.scoreValue.toString(),
+        })),
+      })),
+    },
+  })) as any[]; // Using any[] to bypass strict typing for now, ideally strictly typed
+
 }
 
 export async function insertQuizResponse(input: {
