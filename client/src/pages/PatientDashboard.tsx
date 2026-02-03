@@ -228,8 +228,7 @@ export default function PatientDashboard() {
         </Card>
 
         {/* Quick Links */}
-          <div className={`grid grid-cols-1 ${history.length > 0 ? "md:grid-cols-2" : ""} gap-4`}>
-          {history.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Button
               variant="outline"
               onClick={() => navigate("/history")}
@@ -239,7 +238,7 @@ export default function PatientDashboard() {
               <span className="text-2xl">📊</span>
               <span className="font-semibold">Ver histórico completo</span>
             </Button>
-          )}
+
           <Button
             variant="outline"
             onClick={() => navigate("/exercises")}
