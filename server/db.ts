@@ -459,3 +459,81 @@ export async function disconnectDb(): Promise<void> {
 export async function getDb() {
   return prisma;
 }
+
+// ============================================================================
+// LEGACY/HELPER FUNCTIONS FOR BACKWARD COMPATIBILITY
+// ============================================================================
+
+export async function getAllPatients(): Promise<User[]> {
+  const users = await prisma.user.findMany({
+    where: { role: "PATIENT" },
+    orderBy: { createdAt: "desc" },
+  });
+  return users as User[];
+}
+
+export async function getPatientProfile(userId: number): Promise<PatientProfile | null> {
+  return getPatientProfileByUserId(userId);
+}
+
+export async function getActiveQuiz(): Promise<Quiz | null> {
+  const quiz = await prisma.quiz.findFirst({
+    where: { isActive: true },
+    include: {
+      questions: {
+        include: {
+          options: true,
+        },
+        orderBy: { order: "asc" },
+      },
+      scoringConfigs: true,
+    },
+  });
+
+  if (!quiz) return null;
+
+  return {
+    ...quiz,
+    questions: quiz.questions.map((q: any) => ({
+      ...q,
+      questionType: q.questionType as QuizQuestionType,
+      weight: q.weight.toString(),
+      options: q.options.map((opt: any) => ({
+        ...opt,
+        scoreValue: opt.scoreValue.toString(),
+      })),
+    })),
+    scoringConfig: quiz.scoringConfigs.map((sc: any) => ({
+      ...sc,
+      minScore: sc.minScore.toString(),
+      maxScore: sc.maxScore.toString(),
+    })),
+  } as Quiz;
+}
+
+export async function getQuizWithQuestions(quizId: number): Promise<Quiz | null> {
+  return getQuizById(quizId);
+}
+
+export async function ensureBaselineQuizQuestions(): Promise<void> {
+  // This function is no longer needed with Prisma migrations
+  // Baseline data should be created via migrations or seed scripts
+  return;
+}
+
+export async function updateQuizById(
+  id: number,
+  update: Partial<Omit<Quiz, "id" | "createdAt" | "updatedAt">>
+): Promise<void> {
+  await prisma.quiz.update({
+    where: { id },
+    data: {
+      ...update,
+      updatedAt: new Date(),
+    },
+  });
+}
+
+export async function getAllExercises(): Promise<ExerciseTutorial[]> {
+  return getAllExerciseTutorials();
+}
