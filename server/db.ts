@@ -1,6 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaMySql } from "@prisma/adapter-mysql2";
-import mysql from "mysql2/promise";
 import type {
   ExerciseIntensity,
   ExerciseTutorial,
@@ -19,26 +17,15 @@ import type {
 declare global {
   // eslint-disable-next-line no-var
   var __oncolivingPrismaClient: PrismaClient | undefined;
-  // eslint-disable-next-line no-var
-  var __oncolivingMySqlPool: mysql.Pool | undefined;
 }
 
 const isTest = process.env.NODE_ENV === "test";
 
-// Initialize Prisma Client with MySQL2 adapter
+// Initialize Prisma Client
+// Note: Prisma 7 uses direct connection via DATABASE_URL in prisma.config.ts
 export function getPrisma(): PrismaClient {
   if (!globalThis.__oncolivingPrismaClient) {
-    // Create MySQL2 connection pool
-    if (!globalThis.__oncolivingMySqlPool) {
-      const databaseUrl = process.env.DATABASE_URL || "";
-      globalThis.__oncolivingMySqlPool = mysql.createPool(databaseUrl);
-    }
-
-    // Create Prisma adapter
-    const adapter = new PrismaMySql(globalThis.__oncolivingMySqlPool);
-
     globalThis.__oncolivingPrismaClient = new PrismaClient({
-      adapter,
       log: isTest ? [] : ["error", "warn"],
     });
   }
