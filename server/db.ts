@@ -618,3 +618,14 @@ export async function getExercisesByIntensity(
   });
   return exercises as ExerciseTutorial[];
 }
+
+export async function updateExerciseTutorialById(
+  id: number,
+  update: Partial<Omit<ExerciseTutorial, "id" | "createdAt" | "updatedAt">>
+): Promise<void> {
+  return updateExerciseTutorial(id, update);
+}
+
+export async function deleteExerciseTutorialById(id: number): Promise<void> {
+  return deleteExerciseTutorial(id);
+}
