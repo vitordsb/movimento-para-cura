@@ -12,9 +12,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { AUTH_TOKEN_KEY } from "@/const";
+import { trpc } from "@/lib/trpc";
+import { useLocation } from "wouter";
 
 export default function AuthPage() {
   const { isAuthenticated, loading } = useAuth();
+  const [, navigate] = useLocation();
   const [showInfo, setShowInfo] = useState(true);
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
@@ -27,6 +30,7 @@ export default function AuthPage() {
   const [showPlanModal, setShowPlanModal] = useState(false);
 
   const isRegister = mode === "register";
+  const createPaymentMutation = trpc.subscriptions.createPayment.useMutation();
 
   const handlePasswordAuth = async () => {
     try {
@@ -66,10 +70,43 @@ export default function AuthPage() {
         throw new Error(data?.error || "Falha na autenticação");
       }
       if (isRegister) {
-        toast.success("Conta criada! Entre com seu email e senha para continuar.");
+        toast.success("Conta criada!");
+
+        // For paid plans, login and redirect to payment
+        if (planChoice === "monthly" || planChoice === "annual") {
+          // Auto-login the user
+          const loginRes = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: emailValue, password: passwordValue }),
+          });
+          const loginData = await loginRes.json().catch(() => ({}));
+
+          if (loginData?.token) {
+            try {
+              localStorage.setItem(AUTH_TOKEN_KEY, loginData.token);
+            } catch { }
+
+            // Create payment and redirect
+            toast.info("Redirecionando para pagamento...");
+            const payment = await createPaymentMutation.mutateAsync({
+              planType: planChoice,
+            });
+
+            // Open Asaas payment in new tab
+            window.open(payment.paymentUrl, "_blank");
+
+            // Redirect to payment status page
+            navigate("/payment");
+            return;
+          }
+        }
+
+        // For free plan, just prompt login
         try {
           localStorage.setItem("needs-anamnesis", "1");
         } catch {}
+        toast.success("Entre com seu email e senha para continuar.");
         setMode("login");
         setPassword("");
         setTermsAccepted(false);

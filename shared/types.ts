@@ -16,6 +16,8 @@ export type User = {
   hasActivePlan: boolean;
   hasCompletedAnamnesis: boolean;
   planType?: string | null;
+  asaasCustomerId?: string | null;
+  asaasSubscriptionId?: string | null;
   createdAt: Date;
   updatedAt: Date;
   lastSignedIn: Date;

@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 // Pages
 import LandingPage from "./pages/LandingPage";
 import AuthPage from "./pages/AuthPage";
+import PaymentPage from "./pages/PaymentPage";
 import PatientDashboard from "./pages/PatientDashboard";
 import QuizPage from "./pages/QuizPage";
 import HistoryPage from "./pages/HistoryPage";
@@ -24,6 +25,7 @@ function Router() {
       {/* Public routes */}
       <Route path="/" component={LandingPage} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/payment" component={PaymentPage} />
 
       {/* Patient routes */}
       <Route path="/dashboard" component={PatientDashboard} />

@@ -159,6 +159,8 @@ export async function createUser(input: {
   hasActivePlan: boolean;
   hasCompletedAnamnesis: boolean;
   planType?: string | null;
+  asaasCustomerId?: string | null;
+  asaasSubscriptionId?: string | null;
 }): Promise<User> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -176,6 +178,8 @@ export async function createUser(input: {
     hasActivePlan: input.hasActivePlan,
     hasCompletedAnamnesis: input.hasCompletedAnamnesis,
     planType: input.planType ?? null,
+    asaasCustomerId: input.asaasCustomerId ?? null,
+    asaasSubscriptionId: input.asaasSubscriptionId ?? null,
     createdAt: now,
     updatedAt: now,
     lastSignedIn: now,
@@ -187,7 +191,7 @@ export async function createUser(input: {
 
 export async function updateUserById(
   id: number,
-  update: Partial<Pick<User, "name" | "hasActivePlan" | "hasCompletedAnamnesis" | "lastSignedIn" | "planType">>
+  update: Partial<Pick<User, "name" | "hasActivePlan" | "hasCompletedAnamnesis" | "lastSignedIn" | "planType" | "asaasCustomerId" | "asaasSubscriptionId">>
 ): Promise<void> {
   const db = await getDb();
   if (!db) return;
