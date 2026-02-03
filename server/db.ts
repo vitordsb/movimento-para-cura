@@ -537,3 +537,84 @@ export async function updateQuizById(
 export async function getAllExercises(): Promise<ExerciseTutorial[]> {
   return getAllExerciseTutorials();
 }
+
+export async function updateQuizQuestionById(
+  id: number,
+  update: Partial<Omit<QuizQuestion, "id" | "createdAt" | "updatedAt">>
+): Promise<void> {
+  await prisma.quizQuestion.update({
+    where: { id },
+    data: {
+      ...update,
+      updatedAt: new Date(),
+    },
+  });
+}
+
+export async function deleteQuizQuestionById(id: number): Promise<void> {
+  await prisma.quizQuestion.delete({
+    where: { id },
+  });
+}
+
+export async function getTodayResponse(userId: number): Promise<QuizResponse | null> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const response = await prisma.quizResponse.findFirst({
+    where: {
+      userId,
+      responseDate: {
+        gte: today,
+        lt: tomorrow,
+      },
+    },
+    include: {
+      answers: true,
+    },
+  });
+
+  if (!response) return null;
+
+  return {
+    ...response,
+    totalScore: response.totalScore.toString(),
+    answers: response.answers.map((a: any) => ({
+      ...a,
+      scoreValue: a.scoreValue.toString(),
+    })),
+  } as QuizResponse;
+}
+
+export async function getPatientResponses(userId: number): Promise<QuizResponse[]> {
+  return getQuizResponsesByUserId(userId);
+}
+
+export async function insertQuizResponse(input: {
+  userId: number;
+  quizId: number;
+  totalScore: string;
+  isGoodDayForExercise: boolean;
+  recommendedIntensity: ExerciseIntensity | null;
+  answers: Array<{
+    questionId: number;
+    selectedOptionId: number | null;
+    textAnswer: string | null;
+    scoreValue: string;
+  }>;
+}): Promise<QuizResponse> {
+  return createQuizResponse(input);
+}
+
+export async function getExercisesByIntensity(
+  intensity: ExerciseIntensity
+): Promise<ExerciseTutorial[]> {
+  const exercises = await prisma.exerciseTutorial.findMany({
+    where: { intensityLevel: intensity },
+    orderBy: { createdAt: "desc" },
+  });
+  return exercises as ExerciseTutorial[];
+}
