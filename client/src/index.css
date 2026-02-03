@@ -49,9 +49,23 @@
   --text-fluid-2xl: clamp(1.5rem, 1.4rem + 0.5vw, 1.875rem);
   --text-fluid-3xl: clamp(1.875rem, 1.7rem + 0.875vw, 2.5rem);
 
-  /* Improved Contrast Colors (Oklch tweaked for AA/AAA) */
-  --primary: oklch(0.55 0.22 260); /* Deep Blue for better contrast on white */
-  --primary-foreground: oklch(0.98 0.01 260);
+  /* Brand Fonts */
+    --font-sans: "Quicksand", sans-serif;
+  
+    /* Brand Colors */
+    --color-pink-50: #f7f5f6;
+    /* Light Gray/White from user */
+    --color-pink-500: #e2278e;
+    /* Primary Brand Pink */
+    --color-pink-600: #c21b76;
+    /* Darker shade for hover */
+    --color-gray-900: #434142;
+    /* Brand Dark Gray */
+  
+    /* Improved Contrast Colors */
+    /* --primary: oklch(0.55 0.22 260); */
+    --primary: #e2278e;
+    --primary-foreground: #ffffff;
   
   --radius: 0.75rem; /* Slightly friendlier radius */
 }

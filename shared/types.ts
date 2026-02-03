@@ -18,7 +18,16 @@ export type User = {
   planType?: string | null;
   asaasCustomerId?: string | null;
   asaasSubscriptionId?: string | null;
-  createdAt: Date;
+
+  // Billing Info
+  cpfCnpj?: string | null;
+  mobilePhone?: string | null;
+  postalCode?: string | null;
+  address?: string | null;
+  addressNumber?: string | null;
+  province?: string | null;
+
+  createdAt: string | Date;
   updatedAt: Date;
   lastSignedIn: Date;
 };

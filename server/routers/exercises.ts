@@ -77,9 +77,8 @@ export const exercisesRouter = router({
         updateData.safetyGuidelines = input.safetyGuidelines;
       if (input.videoLink !== undefined) updateData.videoLink = input.videoLink;
 
-      const updated = await updateExerciseTutorialById(input.exerciseId, updateData);
-      if (!updated) throw new Error("Exercício não encontrado");
-      return updated;
+      await updateExerciseTutorialById(input.exerciseId, updateData);
+      return { success: true } as const;
     }),
 
   /**

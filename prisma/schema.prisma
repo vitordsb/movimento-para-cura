@@ -23,6 +23,14 @@ model User {
   planType              String?          @db.VarChar(50)
   asaasCustomerId       String?          @db.VarChar(255)
   asaasSubscriptionId   String?          @db.VarChar(255)
+  
+  // Billing Info
+  cpfCnpj               String?          @db.VarChar(20)
+  mobilePhone           String?          @db.VarChar(20)
+  postalCode            String?          @db.VarChar(20)
+  address               String?          @db.VarChar(255)
+  addressNumber         String?          @db.VarChar(20)
+  province              String?          @db.VarChar(100)
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt
   lastSignedIn          DateTime         @default(now())

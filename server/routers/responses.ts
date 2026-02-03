@@ -119,7 +119,7 @@ export const responsesRouter = router({
         answersMap[answer.questionId] = answer.answerValue;
       }
 
-      const decision = determineDailyDecision(quiz.questions, answersMap);
+      const decision = determineDailyDecision(quiz.questions || [], answersMap);
 
       // Create response
       const responseData = {
@@ -131,7 +131,11 @@ export const responsesRouter = router({
         recommendedExerciseType: decision.recommendedExerciseType,
       };
 
-      return await insertQuizResponse(responseData);
+      return await insertQuizResponse({
+        ...responseData,
+        recommendedIntensity: null,
+        answers: [],
+      });
     }),
 
   /**

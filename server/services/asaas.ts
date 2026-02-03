@@ -27,6 +27,11 @@ interface CreateCustomerInput {
   name: string;
   email: string;
   cpfCnpj?: string;
+  mobilePhone?: string;
+  postalCode?: string;
+  address?: string;
+  addressNumber?: string;
+  province?: string;
 }
 
 interface CreateSubscriptionInput {
@@ -66,6 +71,16 @@ export async function createAsaasCustomer(input: CreateCustomerInput): Promise<A
   });
 }
 
+export async function getSubscription(id: string): Promise<AsaasSubscription> {
+  try {
+    const response = await asaasFetch(`/subscriptions/${id}`);
+    return response;
+  } catch (error: any) {
+    console.error("Error fetching Asaas subscription:", error.message);
+    throw new Error("Failed to fetch subscription");
+  }
+}
+
 export async function createAsaasSubscription(input: CreateSubscriptionInput): Promise<AsaasSubscription> {
   return asaasFetch("/subscriptions", {
     method: "POST",
@@ -85,4 +100,28 @@ export async function cancelAsaasSubscription(subscriptionId: string): Promise<v
 
 export async function getAsaasPayment(paymentId: string) {
   return asaasFetch(`/payments/${paymentId}`);
+}
+
+export interface AsaasPayment {
+  id: string;
+  dateCreated: string;
+  customer: string;
+  subscription: string;
+  value: number;
+  netValue: number;
+  originalValue?: number;
+  interestValue?: number;
+  description?: string;
+  billingType: "BOLETO" | "CREDIT_CARD" | "PIX" | "UNDEFINED";
+  status: "PENDING" | "RECEIVED" | "CONFIRMED" | "OVERDUE" | "REFUNDED" | "RECEIVED_IN_CASH" | "REFUND_REQUESTED" | "CHARGEBACK_REQUESTED" | "CHARGEBACK_DISPUTE" | "AWAITING_CHARGEBACK_REVERSAL" | "DUNNING_REQUESTED" | "DUNNING_RECEIVED" | "AWAITING_RISK_ANALYSIS";
+  dueDate: string;
+  invoiceUrl: string;
+  bankSlipUrl?: string;
+  transactionReceiptUrl?: string;
+  invoiceNumber?: string;
+}
+
+export async function getSubscriptionPayments(subscriptionId: string): Promise<AsaasPayment[]> {
+  const response = await asaasFetch(`/subscriptions/${subscriptionId}/payments`);
+  return response.data || [];
 }

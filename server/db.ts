@@ -103,7 +103,7 @@ export async function createUser(input: {
 
 export async function updateUserById(
   id: number,
-  update: Partial<Pick<User, "name" | "hasActivePlan" | "hasCompletedAnamnesis" | "lastSignedIn" | "planType" | "asaasCustomerId" | "asaasSubscriptionId">>
+  update: Partial<Pick<User, "name" | "hasActivePlan" | "hasCompletedAnamnesis" | "lastSignedIn" | "planType" | "asaasCustomerId" | "asaasSubscriptionId" | "cpfCnpj" | "mobilePhone" | "postalCode" | "address" | "addressNumber" | "province">>
 ): Promise<void> {
   await prisma.user.update({
     where: { id },
@@ -140,7 +140,7 @@ export async function createPatientProfile(input: {
       treatmentStage: input.treatmentStage ?? null,
       dateOfBirth: input.dateOfBirth ?? null,
       gender: input.gender ?? null,
-      observations: input.observations ?? null,
+      observations: (input.observations as any) ?? null,
     },
   });
   return profile as PatientProfile;
@@ -154,6 +154,7 @@ export async function updatePatientProfile(
     where: { userId },
     data: {
       ...update,
+      observations: update.observations !== undefined ? (update.observations as any) : undefined,
       updatedAt: new Date(),
     },
   });
@@ -528,7 +529,9 @@ export async function updateQuizById(
   await prisma.quiz.update({
     where: { id },
     data: {
-      ...update,
+      description: update.description ?? undefined,
+      isActive: update.isActive ?? undefined,
+      createdBy: update.createdBy ?? undefined,
       updatedAt: new Date(),
     },
   });
@@ -545,7 +548,10 @@ export async function updateQuizQuestionById(
   await prisma.quizQuestion.update({
     where: { id },
     data: {
-      ...update,
+      text: update.text ?? undefined,
+      questionType: update.questionType ?? undefined,
+      weight: update.weight ? parseFloat(update.weight) : undefined,
+      order: update.order ?? undefined,
       updatedAt: new Date(),
     },
   });
@@ -557,21 +563,27 @@ export async function deleteQuizQuestionById(id: number): Promise<void> {
   });
 }
 
-export async function getTodayResponse(userId: number): Promise<QuizResponse | null> {
+export async function getTodayResponse(userId: number, quizId?: number): Promise<QuizResponse | null> {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  const response = await prisma.quizResponse.findFirst({
-    where: {
-      userId,
-      responseDate: {
-        gte: today,
-        lt: tomorrow,
-      },
+  const where: any = {
+    userId,
+    responseDate: {
+      gte: today,
+      lt: tomorrow,
     },
+  };
+
+  if (quizId) {
+    where.quizId = quizId;
+  }
+
+  const response = await prisma.quizResponse.findFirst({
+    where,
     include: {
       answers: true,
     },
@@ -589,8 +601,20 @@ export async function getTodayResponse(userId: number): Promise<QuizResponse | n
   } as QuizResponse;
 }
 
-export async function getPatientResponses(userId: number): Promise<QuizResponse[]> {
-  return getQuizResponsesByUserId(userId);
+export async function getPatientResponses(userId: number, limit?: number): Promise<QuizResponse[]> {
+  const responses = await prisma.quizResponse.findMany({
+    where: { userId },
+    take: limit,
+    include: {
+      answers: true,
+    },
+    orderBy: { responseDate: "desc" },
+  });
+
+  return responses.map(r => ({
+    ...r,
+    totalScore: r.totalScore.toString(),
+  })) as QuizResponse[];
 }
 
 export async function insertQuizResponse(input: {
@@ -599,6 +623,7 @@ export async function insertQuizResponse(input: {
   totalScore: string;
   isGoodDayForExercise: boolean;
   recommendedIntensity: ExerciseIntensity | null;
+  recommendedExerciseType?: string;
   answers: Array<{
     questionId: number;
     selectedOptionId: number | null;
@@ -606,7 +631,20 @@ export async function insertQuizResponse(input: {
     scoreValue: string;
   }>;
 }): Promise<QuizResponse> {
-  return createQuizResponse(input);
+  return createQuizResponse({
+    ...input,
+    recommendedExerciseType: input.recommendedExerciseType || (input.recommendedIntensity || "NONE"),
+  });
+}
+export async function getScoringConfigForQuiz(quizId: number): Promise<QuizScoringConfig[]> {
+  const configs = await prisma.quizScoringConfig.findMany({
+    where: { quizId },
+  });
+  return configs.map(c => ({
+    ...c,
+    minScore: c.minScore.toString(),
+    maxScore: c.maxScore.toString(),
+  })) as QuizScoringConfig[];
 }
 
 export async function getExercisesByIntensity(

@@ -23,7 +23,7 @@ export const quizzesRouter = router({
     if (!quiz) {
       return null;
     }
-    await ensureBaselineQuizQuestions(quiz.id);
+    await ensureBaselineQuizQuestions();
 
     return await getQuizWithQuestions(quiz.id);
   }),
@@ -88,9 +88,8 @@ export const quizzesRouter = router({
         updateData.description = input.description;
       if (input.isActive !== undefined) updateData.isActive = input.isActive;
 
-      const updated = await updateQuizById(input.quizId, updateData);
-      if (!updated) throw new Error("Quiz não encontrado");
-      return updated;
+      await updateQuizById(input.quizId, updateData);
+      return { success: true };
     }),
 
   /**
@@ -136,9 +135,8 @@ export const quizzesRouter = router({
           updateData.weight = input.weight.toString();
         if (input.order !== undefined) updateData.order = input.order;
 
-        const updated = await updateQuizQuestionById(input.questionId, updateData);
-        if (!updated) throw new Error("Questão não encontrada");
-        return updated;
+        await updateQuizQuestionById(input.questionId, updateData);
+        return { success: true };
       }),
 
     /**
