@@ -1,0 +1,191 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model User {
+  id                    Int              @id @default(autoincrement())
+  openId                String           @unique @db.VarChar(255)
+  email                 String           @unique @db.VarChar(255)
+  name                  String?          @db.VarChar(255)
+  passwordHash          String?          @db.Text
+  role                  UserRole
+  loginMethod           String?          @db.VarChar(50)
+  hasActivePlan         Boolean          @default(false)
+  hasCompletedAnamnesis Boolean          @default(false)
+  planType              String?          @db.VarChar(50)
+  asaasCustomerId       String?          @db.VarChar(255)
+  asaasSubscriptionId   String?          @db.VarChar(255)
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  lastSignedIn          DateTime         @default(now())
+  
+  patientProfile        PatientProfile?
+  quizzesCreated        Quiz[]           @relation("QuizCreator")
+  quizResponses         QuizResponse[]
+
+  @@index([email])
+  @@index([openId])
+  @@map("users")
+}
+
+model PatientProfile {
+  id                Int       @id @default(autoincrement())
+  userId            Int       @unique
+  mainDiagnosis     String?   @db.Text
+  treatmentStage    String?   @db.VarChar(255)
+  dateOfBirth       DateTime? @db.Date
+  gender            String?   @db.VarChar(50)
+  observations      Json?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("patient_profiles")
+}
+
+model Quiz {
+  id              Int                @id @default(autoincrement())
+  name            String             @db.VarChar(255)
+  description     String?            @db.Text
+  isActive        Boolean            @default(true)
+  createdBy       Int?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  
+  creator         User?              @relation("QuizCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  questions       QuizQuestion[]
+  scoringConfigs  QuizScoringConfig[]
+  responses       QuizResponse[]
+
+  @@index([createdBy])
+  @@index([isActive])
+  @@map("quizzes")
+}
+
+model QuizQuestion {
+  id            Int                  @id @default(autoincrement())
+  quizId        Int
+  text          String               @db.Text
+  questionType  QuestionType
+  weight        Decimal              @db.Decimal(10, 2)
+  order         Int
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  
+  quiz          Quiz                 @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options       QuestionOption[]
+  answers       ResponseAnswer[]
+
+  @@index([quizId])
+  @@index([order])
+  @@map("quiz_questions")
+}
+
+model QuestionOption {
+  id          Int          @id @default(autoincrement())
+  questionId  Int
+  text        String       @db.VarChar(255)
+  scoreValue  Decimal      @db.Decimal(10, 2)
+  order       Int
+  createdAt   DateTime     @default(now())
+  
+  question    QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId])
+  @@index([order])
+  @@map("question_options")
+}
+
+model QuizScoringConfig {
+  id                      Int      @id @default(autoincrement())
+  quizId                  Int
+  minScore                Decimal  @db.Decimal(10, 2)
+  maxScore                Decimal  @db.Decimal(10, 2)
+  isGoodDay               Boolean
+  recommendedExerciseType String   @db.VarChar(255)
+  exerciseDescription     String?  @db.Text
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  
+  quiz                    Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
+  @@map("scoring_configs")
+}
+
+model QuizResponse {
+  id                      Int              @id @default(autoincrement())
+  userId                  Int
+  quizId                  Int
+  responseDate            DateTime         @default(now())
+  totalScore              Decimal          @db.Decimal(10, 2)
+  isGoodDayForExercise    Boolean
+  recommendedExerciseType String           @db.VarChar(255)
+  generalObservations     String?          @db.Text
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+  
+  user                    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz                    Quiz             @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  answers                 ResponseAnswer[]
+
+  @@index([userId])
+  @@index([quizId])
+  @@index([responseDate])
+  @@map("quiz_responses")
+}
+
+model ResponseAnswer {
+  id          Int          @id @default(autoincrement())
+  responseId  Int
+  questionId  Int
+  answerValue String       @db.Text
+  createdAt   DateTime     @default(now())
+  
+  response    QuizResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  question    QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([responseId])
+  @@index([questionId])
+  @@map("response_answers")
+}
+
+model ExerciseTutorial {
+  id                Int              @id @default(autoincrement())
+  name              String           @db.VarChar(255)
+  description       String?          @db.Text
+  intensityLevel    IntensityLevel
+  safetyGuidelines  String?          @db.Text
+  videoLink         String?          @db.VarChar(500)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@index([intensityLevel])
+  @@map("exercise_tutorials")
+}
+
+enum UserRole {
+  PATIENT
+  ONCOLOGIST
+}
+
+enum QuestionType {
+  YES_NO
+  SCALE_0_10
+  MULTIPLE_CHOICE
+}
+
+enum IntensityLevel {
+  LIGHT
+  MODERATE
+  STRONG
+}

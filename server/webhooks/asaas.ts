@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { updateUserById, getUserById } from "../db";
+import { updateUserById, getPrisma } from "../db";
 import { getAsaasPayment } from "../services/asaas";
 
 interface AsaasWebhookPayload {
@@ -34,18 +34,10 @@ export async function handleAsaasWebhook(req: Request, res: Response) {
         return res.status(400).json({ error: "No subscription ID" });
       }
 
-      // Find user with this subscription
-      // Note: This is a simple implementation. In production, you might want to
-      // maintain a separate subscriptions collection for better querying
-      const { getDb } = await import("../db");
-      const db = await getDb();
-      if (!db) {
-        console.error("[Asaas Webhook] Database not available");
-        return res.status(500).json({ error: "Database error" });
-      }
-
-      const user = await db.collection("users").findOne({ 
-        asaasSubscriptionId: subscriptionId 
+      // Find user with this subscription using Prisma
+      const prisma = getPrisma();
+      const user = await prisma.user.findFirst({
+        where: { asaasSubscriptionId: subscriptionId },
       });
 
       if (!user) {

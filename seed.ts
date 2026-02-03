@@ -1,7 +1,7 @@
 import "dotenv/config";
 // @ts-ignore: Library has incorrect types (d.ts mismatch with esm export)
 import Scrypt from "scrypt-kdf";
-import { getAllExercises, getActiveQuiz, getUserByEmail, createUser } from "./server/db";
+import { getUserByEmail, createUser, getPrisma } from "./server/db";
 import { ENV } from "./server/config/env";
 
 const ADMIN_EMAIL = "admin@oncoliving.com.br";
@@ -25,10 +25,12 @@ async function verifyPassword(stored: string | null | undefined, password: strin
 async function seed() {
   console.log("🌱 Seeding database...");
 
-  if (!ENV.mongoUri) {
-    console.error("❌ MONGO_URI não está definido no .env");
+  if (!ENV.databaseUrl) {
+    console.error("❌ DATABASE_URL não está definido no .env");
     process.exit(1);
   }
+
+  const prisma = getPrisma();
 
   // Ensure admin exists
   const existingAdmin = await getUserByEmail(ADMIN_EMAIL);
@@ -51,14 +53,16 @@ async function seed() {
     console.log(`ℹ️ Admin já existe: ${ADMIN_EMAIL} ${isPasswordOk ? "(senha padrão OK)" : "(senha diferente)"}`);
   }
 
-  // These getters will auto-generate defaults if missing
-  const quiz = await getActiveQuiz();
-  if (quiz) console.log(`✅ Quiz ativo: #${quiz.id} (${quiz.name}) - Questões: ${(quiz as any).questions?.length ?? '?'}`);
+  // Check for quiz
+  const quizCount = await prisma.quiz.count();
+  console.log(`ℹ️ Quizzes no banco: ${quizCount}`);
 
-  const exercises = await getAllExercises();
-  console.log(`✅ Exercícios: ${exercises.length}`);
+  // Check for exercises
+  const exerciseCount = await prisma.exerciseTutorial.count();
+  console.log(`ℹ️ Exercícios no banco: ${exerciseCount}`);
 
   console.log("✅ Seed finalizado.");
+  await prisma.$disconnect();
   process.exit(0);
 }
 
