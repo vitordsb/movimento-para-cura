@@ -155,13 +155,33 @@ export async function updatePatientProfile(
   userId: number,
   update: Partial<Omit<PatientProfile, "id" | "userId" | "createdAt" | "updatedAt">>
 ): Promise<void> {
-  await prisma.patientProfile.update({
+  const data = {
+    mainDiagnosis: update.mainDiagnosis ?? null,
+    treatmentStage: update.treatmentStage ?? null,
+    dateOfBirth: update.dateOfBirth ?? null,
+    gender: update.gender ?? null,
+    observations: update.observations ?? Prisma.JsonNull,
+  };
+
+  // Filter out undefined values to allow partial updates without overwriting with nulls if not intended
+  // Actually, for upsert 'create', we need values. For 'update', undefined means 'do not touch'.
+  // But here we are constructing a data object.
+  // The input 'update' comes from partial inputs.
+
+  // Refined approach: pass 'update' directly if keys match.
+  // But we need to handle generic object type safely.
+
+  await prisma.patientProfile.upsert({
     where: { userId },
-    data: {
+    update: {
       ...update,
       observations: update.observations !== undefined ? (update.observations as any) : undefined,
       updatedAt: new Date(),
     },
+    create: {
+      userId,
+      ...update,
+    } as any, // detailed casting not needed as update matches shape mostly
   });
 }
 
