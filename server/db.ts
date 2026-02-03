@@ -25,6 +25,11 @@ const isTest = process.env.NODE_ENV === "test";
 // Note: Prisma 7 uses direct connection via DATABASE_URL in prisma.config.ts
 export function getPrisma(): PrismaClient {
   if (!globalThis.__oncolivingPrismaClient) {
+    if (process.env.DATABASE_URL) {
+      console.log(`DEBUG: Prisma INIT with DB URL: ${process.env.DATABASE_URL.replace(/:[^:@]*@/, ":***@")}`);
+    } else {
+      console.log("DEBUG: Prisma INIT - DATABASE_URL is undefined!");
+    }
     globalThis.__oncolivingPrismaClient = new PrismaClient({
       log: isTest ? [] : ["error", "warn"],
     });
