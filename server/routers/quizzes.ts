@@ -18,24 +18,26 @@ export const quizzesRouter = router({
   /**
    * Get active quiz for patient (public, returns current quiz)
    */
-  console.log("DEBUG: getActive called");
-  try {
-    const quiz = await getActiveQuiz();
+  getActive: publicProcedure.query(async () => {
+    console.log("DEBUG: getActive called");
+    try {
+      const quiz = await getActiveQuiz();
       console.log("DEBUG: quiz found?", quiz?.id, quiz?.name);
 
-      if(!quiz) {
+      if (!quiz) {
         console.log("DEBUG: No active quiz found in DB query");
         return null;
       }
 
       await ensureBaselineQuizQuestions();
       const full = await getQuizWithQuestions(quiz.id);
-    console.log("DEBUG: full quiz questions count:", full?.questions?.length);
-    return full;
-  } catch(err) {
-    console.error("DEBUG: Error in getActive:", err);
-    throw err;
-  }
+      console.log("DEBUG: full quiz questions count:", full?.questions?.length);
+      return full;
+    } catch (err) {
+      console.error("DEBUG: Error in getActive:", err);
+      throw err;
+    }
+  }),
 
   /**
    * Get specific quiz by ID with all questions and options
