@@ -108,6 +108,7 @@ export default function LandingPage() {
       description: "Faça o quiz demonstrativo e entenda o fluxo. Resultado completo apenas para assinantes.",
       cta: "Testar agora",
       highlight: false,
+      disabled: false,
     },
     {
       name: "Plano Mensal",
@@ -115,6 +116,7 @@ export default function LandingPage() {
       description: "Acesso completo ao semáforo diário, aulas seguras e histórico.",
       cta: "Assinar mensal",
       highlight: true,
+      disabled: true,
     },
     {
       name: "Plano Anual",
@@ -122,6 +124,7 @@ export default function LandingPage() {
       description: "12 meses com economia e suporte contínuo no acompanhamento.",
       cta: "Assinar anual",
       highlight: false,
+      disabled: true,
     },
   ];
 
@@ -421,7 +424,7 @@ export default function LandingPage() {
             {plans.map((plan, idx) => (
               <Card
                 key={idx}
-                className={`border ${plan.highlight ? "border-pink-300 shadow-xl" : "border-pink-100"}`}
+                className={`border ${plan.highlight ? "border-pink-300 shadow-xl" : "border-pink-100"} ${(plan as any).disabled ? "opacity-90" : ""}`}
               >
                 <CardContent className="p-5 space-y-3">
                   <div className="flex items-center justify-between">
@@ -436,8 +439,9 @@ export default function LandingPage() {
                     className={plan.highlight ? "bg-pink-500 hover:bg-pink-600 w-full" : "border-pink-200 text-pink-700 w-full"}
                     variant={plan.highlight ? "default" : "outline"}
                     onClick={() => handlePlanClick(plan.cta)}
+                    disabled={(plan as any).disabled}
                   >
-                    {plan.cta}
+                    {(plan as any).disabled ? "Em breve" : plan.cta}
                   </Button>
                 </CardContent>
               </Card>
