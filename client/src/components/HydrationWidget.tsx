@@ -126,7 +126,7 @@ export function HydrationWidget() {
 
         <Progress value={percentage} className="h-3 bg-blue-100 mb-4 [&>div]:bg-blue-500" />
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 mb-3">
           <Button 
             variant="outline" 
             size="sm"
@@ -146,6 +146,42 @@ export function HydrationWidget() {
             <Plus className="w-4 h-4 mr-1" /> 500ml
           </Button>
         </div>
+
+        <Dialog open={isDialogOpen} onOpenChange={(open) => {
+          if (open) setNewGoal(goal.toString());
+          setIsDialogOpen(open);
+        }}>
+          <DialogTrigger asChild>
+            <Button variant="ghost" size="sm" className="w-full text-xs text-blue-600 hover:bg-blue-50 h-8">
+              <Settings2 className="w-3 h-3 mr-2" />
+              Alterar meta diária ({goal}ml)
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-xs">
+            <DialogHeader>
+              <DialogTitle>Definir Meta Diária</DialogTitle>
+            </DialogHeader>
+            <div className="py-2 space-y-4">
+              <p className="text-sm text-gray-600">
+                Quanto de água você quer beber por dia? (em ml)
+              </p>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  value={newGoal}
+                  onChange={(e) => setNewGoal(e.target.value)}
+                  className="text-lg"
+                />
+                <span className="text-gray-500 text-sm">ml</span>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={handleUpdateGoal} disabled={updateGoal.isPending} className="w-full bg-blue-600 hover:bg-blue-700">
+                Salvar Meta
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
