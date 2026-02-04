@@ -767,14 +767,14 @@ export async function addWaterIntake(userId: number, amountMl: number): Promise<
 }
 
 export async function getTodayHydration(userId: number): Promise<DailyHydration | null> {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const dateStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
-  return await prisma.dailyHydration.findUnique({
+  // Use findFirst which is more robust than findUnique for Date matching
+  return await prisma.dailyHydration.findFirst({
     where: {
-      userId_date: {
-        userId,
-        date: today,
+      userId,
+      date: {
+        equals: new Date(dateStr)
       },
     },
   });
