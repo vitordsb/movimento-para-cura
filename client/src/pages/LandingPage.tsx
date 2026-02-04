@@ -29,7 +29,7 @@ export default function LandingPage() {
       else navigate("/dashboard");
       return;
     }
-    navigate("/quiz");
+    navigate("/avaliacao");
   };
 
   const handlePlanClick = (cta: string) => {
@@ -152,165 +152,137 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-10 space-y-12">
-        {/* Hero */}
+      <main className="mx-auto max-w-6xl px-4 py-10 space-y-16">
+        {/* HERO */}
         <section className="grid gap-10 lg:grid-cols-2 items-center">
           <div className="space-y-6">
-            <Badge className="bg-pink-100 text-pink-700 border-pink-200 w-fit px-3 py-1 text-sm font-semibold">
-              Por Andressa Semionatto
-            </Badge>
-            <h1 className="text-5xl sm:text-5xl font-bold text-gray-900 leading-tight">Movimento para Cura</h1>
-            <p className="text-xl text-gray-900 font-semibold">
-              Um sistema seguro para você saber quando e como se movimentar durante o tratamento oncológico.
+            <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight">
+              Movimento para a Cura
+              <span className="block text-2xl sm:text-3xl font-medium text-pink-600 mt-2">
+                Exercício físico seguro durante o tratamento oncológico
+              </span>
+            </h1>
+            <p className="text-xl text-gray-700 font-medium">
+              Um sistema simples e confiável para você saber quando, como e quanto se movimentar, mesmo durante a quimioterapia, radioterapia ou pós-cirúrgico.
             </p>
-            <div className="space-y-3 text-lg text-gray-700 leading-relaxed">
-              <p>
-                Se você está em tratamento e tem dúvidas se pode se mexer hoje, este app foi feito para você. 
-              </p>
-              <p>
-                Em poucos segundos, você descobre se hoje é um dia seguro para se movimentar, recebe orientações claras sobre quando treinar, quando adaptar e quando descansar, e evita esforços que possam prejudicar sua recuperação.
-              </p>
-              <p className="text-lg font-semibold">
-                Mais do que treinar, você aprende a ler os sinais do seu corpo, com base em evidências científicas, usando o exercício físico como aliado do tratamento, da qualidade de vida e da longevidade.
-              </p>
-           </div>
-            <div className="flex flex-wrap gap-3 items-center">
-              <Input
-                placeholder="Seu nome para testar"
-                value={trialName}
-                onChange={e => setTrialName(e.target.value)}
-                className="w-full sm:w-64"
-              />
-              <Button className="bg-pink-500 hover:bg-pink-600 text-lg px-6" onClick={handleStart}>
-                Descobrir se posso treinar hoje
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+              <Button className="bg-pink-600 hover:bg-pink-700 text-white text-lg px-8 py-6 h-auto" onClick={handleStart}>
+                Quero saber o que é seguro fazer hoje
               </Button>
             </div>
-                      </div>
-          <div className="relative flex flex-col gap-4">
-            <div className="absolute -inset-6 rounded-3xl bg-pink-200/40 blur-3xl" />
-            <div className="relative flex flex-col items-center gap-6 mt-4 mb-8">
-              {/* Speech Bubble (Floating Above) */}
-              <div className="relative animate-float w-full z-20">
-                <div className="relative bg-white rounded-2xl p-6 shadow-xl border border-pink-100">
-                  {/* Triangle/Tail pointing DOWN */}
-                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[16px] border-t-white drop-shadow-sm"></div>
+          </div>
+          {/* IMAGE / ANDRESSA */}
+          <div className="relative flex justify-center">
+            <div className="absolute inset-0 bg-pink-100 rounded-full blur-3xl opacity-60"></div>
+            <img src="/fotoAndressa.jpeg" alt="Andressa Semionatto" className="relative w-80 h-80 sm:w-96 sm:h-96 object-cover rounded-2xl shadow-2xl rotate-2 hover:rotate-0 transition-transform duration-500 border-4 border-white" />
+          </div>
+        </section>
 
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-pink-600 font-bold mb-1">Sobre a profissional</p>
-                      <h2 className="text-2xl font-bold text-gray-900">Andressa Semionatto</h2>
-                    </div>
-
-                    <div className="space-y-2 text-sm text-gray-700 leading-relaxed max-h-[280px] overflow-y-auto pr-2 custom-scrollbar">
-                      <p>
-                        <span className="font-semibold text-pink-600">Olá! Eu sou a Andressa.</span> Sou profissional de Educação Física, especialista em oncologia clínica e hospitalar.
-                      </p>
-                      <p>
-                        Há mais de 8 anos, acompanho mais de 3.000 pacientes no Brasil e exterior durante seus tratamentos.
-                      </p>
-                      <p>
-                        Criei o Movimento para Cura para unir ciência e sensibilidade, te ajudando a se movimentar com segurança, recuperar sua autonomia e viver com mais qualidade, respeitando cada momento do seu corpo.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Photo (Centered Below) */}
-              <div className="relative shrink-0 z-10 -mt-2">
-                <div className="absolute inset-0 bg-pink-200 rounded-full blur-2xl opacity-60 scale-110"></div>
-                <div className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-full border-4 border-white shadow-2xl overflow-hidden ring-4 ring-pink-50">
-                  <img
-                    src="/fotoAndressa.jpeg"
-                    alt="Andressa Semionatto"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-            </div>
-	            <div className="flex flex-col gap-4 relative z-10">
-	              <Card className="border-pink-100">
-	                <CardContent className="p-4">
-	                  <div className="flex flex-col sm:flex-row gap-4">
-                    <div className="sm:w-36 lg:w-40 shrink-0">
-                      <p className="text-xs uppercase tracking-wide text-gray-600 font-semibold">
-                        Metodologia
-                      </p>
-                      <p className="mt-1 text-3xl font-extrabold text-pink-600 leading-none">
-                        SINAIS
-                      </p>
-                      <p className="mt-1 text-xs text-gray-600">
-                        Critérios clínicos em 6 pilares
-                      </p>
-                    </div>
-
-                    <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {[
-                        { letter: "S", label: "Sintomas" },
-                        { letter: "I", label: "Intensidade" },
-                        { letter: "N", label: "Nível de energia" },
-                        { letter: "A", label: "Ambiente clínico" },
-                        { letter: "I", label: "Intercorrências" },
-                        { letter: "S", label: "Segurança" },
-                      ].map((item) => (
-                        <div
-                          key={`${item.letter}-${item.label}`}
-                          className="flex items-center gap-3 rounded-lg border border-pink-100 bg-white/70 px-3 py-2"
-                        >
-                          <div className="h-8 w-8 rounded-full bg-pink-500 text-white flex items-center justify-center font-bold text-sm">
-                            {item.letter}
-                          </div>
-                          <p className="text-sm font-semibold text-gray-900">
-                            {item.label}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-	                  </div>
-	                </CardContent>
-	              </Card>
-	            </div>
-	          </div>
-	        </section>
-        <section className="grid lg:grid-cols-1 items-start">
-          <div className="space-y-3">
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-wrap gap-3">
+        {/* BLOCO 1: IDENTIFICAÇÃO */}
+        <section className="bg-pink-50 rounded-3xl p-8 sm:p-12">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Este aplicativo foi feito para você?</h2>
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div className="space-y-4">
+              <p className="text-lg font-semibold text-gray-800">Se você está em tratamento oncológico e:</p>
+              <ul className="space-y-3">
                 {[
-                  { icon: "🛡️", title: "Seguro", text: "O exercício respeita seus sintomas, a fase do tratamento, os medicamentos, e as orientações médicas, nada aqui é genérico ou forçado." },
-                  { icon: "⏱️", title: "Exercício como cuidado e longevidade", text: "Aqui, o movimento não é sobre performance. É sobre manter seu corpo ativo com segurança, melhorar sua qualidade de vida e construir saúde ao longo do tratamento e além dele." },
-                  { icon: "🧭", title: "Claro", text: "O App te mostra exatamente qual caminho seguir hoje: se é dia de treinar, adaptar ou descansar - sempre com uma aula segura para o seu momento atual." },
-                  { icon: "🤝", title: "Acolhedor", text: "Você não precisa saber tudo, nem estar bem todos os dias. O Movimento para Cura te acompanha respeitando seus limites físicos e emocionais, sem pressão e sem julgamento" },
-                ].map((item, idx) => (
-                  <Card key={idx} className="border-pink-100 w-full sm:w-auto flex-1 min-w-[160px]">
-                    <CardContent className="p-4 space-y-2">
-                      <div className="text-2xl">{item.icon}</div>
-                      <p className="font-semibold text-gray-900">{item.title}</p>
-                      <p className="text-sm text-gray-700">{item.text}</p>
-                    </CardContent>
-                  </Card>
+                  "Tem medo de se exercitar e 'atrapalhar' o tratamento",
+                  "Não sabe se hoje pode treinar ou se é melhor descansar",
+                  "Já ouviu opiniões contraditórias sobre exercício",
+                  "Se sente cansada, insegura ou sem energia",
+                  "Quer se cuidar, mas não quer errar"
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <CheckCircle className="w-6 h-6 text-pink-500 shrink-0 mt-0.5" />
+                    <span className="text-gray-700">{item}</span>
+                  </li>
                 ))}
-              </div>
-              <Card className="border-pink-100 shadow-sm bg-white/70">
+              </ul>
+            </div>
+            <div className="bg-white p-6 rounded-xl shadow-sm text-center">
+              <p className="text-xl font-bold text-pink-600 mb-2">Sim, esse aplicativo é para você.</p>
+              <p className="text-gray-600">Aqui, o exercício não é cobrança. Não é performance. Não é 'forçar porque faz bem'. Aqui, o movimento é cuidado, segurança e decisão consciente.</p>
+                </div>
+          </div>
+        </section>
+
+        {/* BLOCO 3 & 4: COMO FUNCIONA */}
+        <section className="space-y-10">
+          <div className="text-center max-w-3xl mx-auto space-y-4">
+            <h2 className="text-3xl font-bold text-gray-900">Como funciona na prática</h2>
+            <p className="text-lg text-gray-600">Um sistema inteligente que decide por você, baseado nos seus sintomas do dia.</p>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-6">
+            {[
+              { title: "1. Check-in", desc: "Você responde um check-in rápido do dia sobre seus sintomas." },
+              { title: "2. Análise", desc: "O sistema analisa sua energia, dor, e fase do tratamento." },
+              { title: "3. Decisão", desc: "O aplicativo mostra exatamente o que é seguro fazer hoje." },
+              { title: "4. Treino", desc: "Você recebe um treino curto e adequado, sem precisar pensar." }
+            ].map((step, i) => (
+              <Card key={i} className="border-pink-100 hover:shadow-md transition-shadow">
                 <CardContent className="p-6 space-y-3">
-                  <h4 className="text-xl font-semibold text-pink-700">Como você decide</h4>
-                  <div className="flex flex-col gap-2 text-sm text-gray-800">
-                    {[
-                      "Check-in rápido do dia.",
-                      "O sistema interpreta seus sinais atuais de saúde",
-                      "Você recebe uma orientação objetiva e uma aula segura, adequada para aquele dia",
-                    ].map((line, idx) => (
-                      <div key={idx} className="flex items-center gap-2">
-                        <span className="text-pink-600">➜</span>
-                        <span>{line}</span>
-                      </div>
-                    ))}
-                  </div>
+                  <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center text-pink-600 font-bold text-xl">{i + 1}</div>
+                  <h3 className="font-bold text-lg text-gray-900">{step.title}</h3>
+                  <p className="text-gray-600 text-sm">{step.desc}</p>
                 </CardContent>
               </Card>
+            ))}
+          </div>
+
+          <div className="bg-gray-900 text-white rounded-3xl p-8 sm:p-12 text-center space-y-6">
+            <h3 className="text-2xl font-bold">O que o app decide por você?</h3>
+            <div className="grid sm:grid-cols-3 gap-4 text-left max-w-4xl mx-auto">
+              <div className="bg-green-500/10 border border-green-500/30 p-4 rounded-xl">
+                <p className="font-bold text-green-400 mb-1">🟢 TREINAR</p>
+                <p className="text-sm text-gray-300">Exercícios de força e cardio leve quando você está bem.</p>
+              </div>
+              <div className="bg-yellow-500/10 border border-yellow-500/30 p-4 rounded-xl">
+                <p className="font-bold text-yellow-400 mb-1">🟡 ADAPTAR</p>
+                <p className="text-sm text-gray-300">Movimentos na cadeira ou leves para dias de fadiga moderada.</p>
+                    </div>
+              <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-xl">
+                <p className="font-bold text-blue-400 mb-1">🔵 RECUPERAR</p>
+                <p className="text-sm text-gray-300">Descanso ativo, respiração e alongamento para dias difíceis.</p>
+              </div>
+            </div>
+            <p className="text-gray-400 text-sm max-w-2xl mx-auto italic">Tudo isso respeitando seus sintomas, medicamentos, fase do tratamento e orientação médica.</p>
+          </div>
+        </section>
+
+        {/* BLOCO 7: QUEM É ANDRESSA */}
+        <section className="grid md:grid-cols-2 gap-12 items-center bg-white border border-pink-100 rounded-3xl p-8 shadow-sm">
+          <div className="order-2 md:order-1 space-y-6">
+            <div>
+              <p className="text-sm uppercase tracking-widest text-pink-600 font-bold mb-2">Quem criou</p>
+              <h2 className="text-3xl font-bold text-gray-900">Andressa Semionatto</h2>
+            </div>
+            <div className="space-y-4 text-gray-700 leading-relaxed">
+              <p>Profissional de Educação Física, especialista em exercício físico para pessoas em tratamento oncológico, com atuação clínica e hospitalar.</p>
+              <p>Já acompanhou mais de <strong>3.000 pacientes</strong> no Brasil e no mundo, ajudando pessoas com câncer a se movimentarem com segurança, autonomia e foco em qualidade de vida.</p>
+              <p className="italic font-medium text-gray-900 border-l-4 border-pink-500 pl-4">"Este aplicativo é a tradução prática da minha experiência clínica. Aqui, o exercício respeita o seu tratamento — não o contrário."</p>
+            </div>
+            <Button variant="outline" className="border-pink-200 text-pink-700" onClick={() => window.open("https://instagram.com/andressa.oncopersonal", "_blank")}>
+              Conhecer no Instagram
+            </Button>
+          </div>
+          <div className="order-1 md:order-2 flex justify-center">
+            <div className="w-64 h-64 sm:w-80 sm:h-80 rounded-full overflow-hidden border-4 border-pink-50 shadow-xl">
+              <img src="/fotoAndressa.jpeg" alt="Andressa Semionatto" className="w-full h-full object-cover" />
             </div>
           </div>
-	        </section>
+        </section>
+
+        {/* CTA FINAL */}
+        <section className="text-center space-y-8 py-10">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Você não precisa decidir sozinha.</h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">Tenha o movimento certo, no dia certo.</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button className="bg-pink-600 hover:bg-pink-700 text-white text-lg px-10 py-6 h-auto shadow-lg hover:shadow-xl transition-all" onClick={handleStart}>
+              Quero me movimentar com segurança
+            </Button>
+          </div>
+        </section>
 	        {/* Objeções e diferenciais */}
 	        <section className="space-y-4">
 	          <div className="flex flex-col gap-2">
