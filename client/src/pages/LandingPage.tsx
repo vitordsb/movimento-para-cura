@@ -152,35 +152,35 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-10 space-y-16">
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:py-10 space-y-10 sm:space-y-16">
         {/* HERO */}
-        <section className="grid gap-10 lg:grid-cols-2 items-center">
-          <div className="space-y-6">
-            <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight">
+        <section className="grid gap-8 sm:gap-10 lg:grid-cols-2 items-center">
+          <div className="space-y-6 text-center lg:text-left">
+            <h1 className="text-3xl sm:text-5xl font-bold text-gray-900 leading-tight">
               Movimento para a Cura
-              <span className="block text-2xl sm:text-3xl font-medium text-pink-600 mt-2">
+              <span className="block text-xl sm:text-3xl font-medium text-pink-600 mt-2">
                 Exercício físico seguro durante o tratamento oncológico
               </span>
             </h1>
-            <p className="text-xl text-gray-700 font-medium">
+            <p className="text-lg sm:text-xl text-gray-700 font-medium leading-relaxed">
               Um sistema simples e confiável para você saber quando, como e quanto se movimentar, mesmo durante a quimioterapia, radioterapia ou pós-cirúrgico.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 pt-4">
-              <Button className="bg-pink-600 hover:bg-pink-700 text-white text-lg px-8 py-6 h-auto" onClick={handleStart}>
-                Quero saber o que é seguro fazer hoje
+            <div className="flex flex-col sm:flex-row gap-3 pt-4 justify-center lg:justify-start">
+              <Button className="bg-pink-600 hover:bg-pink-700 text-white text-lg px-8 py-6 h-auto w-full sm:w-auto shadow-lg" onClick={handleStart}>
+                Quero saber o que é seguro
               </Button>
             </div>
           </div>
           {/* IMAGE / ANDRESSA */}
-          <div className="relative flex justify-center">
+          <div className="relative flex justify-center mt-6 lg:mt-0">
             <div className="absolute inset-0 bg-pink-100 rounded-full blur-3xl opacity-60"></div>
-            <img src="/fotoAndressa.jpeg" alt="Andressa Semionatto" className="relative w-80 h-80 sm:w-96 sm:h-96 object-cover rounded-2xl shadow-2xl rotate-2 hover:rotate-0 transition-transform duration-500 border-4 border-white" />
+            <img src="/fotoAndressa.jpeg" alt="Andressa Semionatto" className="relative w-64 h-64 sm:w-96 sm:h-96 object-cover rounded-2xl shadow-2xl rotate-2 hover:rotate-0 transition-transform duration-500 border-4 border-white" />
           </div>
         </section>
 
         {/* BLOCO 1: IDENTIFICAÇÃO */}
-        <section className="bg-pink-50 rounded-3xl p-8 sm:p-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Este aplicativo foi feito para você?</h2>
+        <section className="bg-pink-50 rounded-3xl p-6 sm:p-12">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8 text-center">Este aplicativo foi feito para você?</h2>
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="space-y-4">
               <p className="text-lg font-semibold text-gray-800">Se você está em tratamento oncológico e:</p>
@@ -193,27 +193,27 @@ export default function LandingPage() {
                   "Quer se cuidar, mas não quer errar"
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3">
-                    <CheckCircle className="w-6 h-6 text-pink-500 shrink-0 mt-0.5" />
-                    <span className="text-gray-700">{item}</span>
+                    <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-pink-500 shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm sm:text-base">{item}</span>
                   </li>
                 ))}
               </ul>
             </div>
             <div className="bg-white p-6 rounded-xl shadow-sm text-center">
-              <p className="text-xl font-bold text-pink-600 mb-2">Sim, esse aplicativo é para você.</p>
-              <p className="text-gray-600">Aqui, o exercício não é cobrança. Não é performance. Não é 'forçar porque faz bem'. Aqui, o movimento é cuidado, segurança e decisão consciente.</p>
-                </div>
+              <p className="text-lg sm:text-xl font-bold text-pink-600 mb-2">Sim, esse aplicativo é para você.</p>
+              <p className="text-gray-600 text-sm sm:text-base">Aqui, o exercício não é cobrança. Não é performance. Não é 'forçar porque faz bem'. Aqui, o movimento é cuidado, segurança e decisão consciente.</p>
+            </div>
           </div>
         </section>
 
         {/* BLOCO 3 & 4: COMO FUNCIONA */}
-        <section className="space-y-10">
-          <div className="text-center max-w-3xl mx-auto space-y-4">
-            <h2 className="text-3xl font-bold text-gray-900">Como funciona na prática</h2>
-            <p className="text-lg text-gray-600">Um sistema inteligente que decide por você, baseado nos seus sintomas do dia.</p>
+        <section className="space-y-8 sm:space-y-10">
+          <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Como funciona na prática</h2>
+            <p className="text-base sm:text-lg text-gray-600">Um sistema inteligente que decide por você, baseado nos seus sintomas do dia.</p>
           </div>
 
-          <div className="grid md:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
             {[
               { title: "1. Check-in", desc: "Você responde um check-in rápido do dia sobre seus sintomas." },
               { title: "2. Análise", desc: "O sistema analisa sua energia, dor, e fase do tratamento." },
@@ -221,26 +221,26 @@ export default function LandingPage() {
               { title: "4. Treino", desc: "Você recebe um treino curto e adequado, sem precisar pensar." }
             ].map((step, i) => (
               <Card key={i} className="border-pink-100 hover:shadow-md transition-shadow">
-                <CardContent className="p-6 space-y-3">
-                  <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center text-pink-600 font-bold text-xl">{i + 1}</div>
-                  <h3 className="font-bold text-lg text-gray-900">{step.title}</h3>
+                <CardContent className="p-5 sm:p-6 space-y-2 sm:space-y-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-pink-100 rounded-full flex items-center justify-center text-pink-600 font-bold text-lg sm:text-xl">{i + 1}</div>
+                  <h3 className="font-bold text-base sm:text-lg text-gray-900">{step.title}</h3>
                   <p className="text-gray-600 text-sm">{step.desc}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
 
-          <div className="bg-white border border-pink-100 rounded-3xl p-8 shadow-sm">
-            <div className="flex flex-col sm:flex-row gap-8 items-center">
-              <div className="sm:w-48 shrink-0 text-center sm:text-left">
+          <div className="bg-white border border-pink-100 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 items-center">
+              <div className="w-full sm:w-48 shrink-0 text-center sm:text-left">
                 <p className="text-xs uppercase tracking-wide text-gray-500 font-bold mb-1">
                   Nossa Metodologia
                 </p>
-                <p className="text-4xl font-extrabold text-pink-600 leading-none">
+                <p className="text-3xl sm:text-4xl font-extrabold text-pink-600 leading-none">
                   SINAIS
                 </p>
                 <p className="mt-2 text-sm text-gray-600">
-                  Critérios clínicos que garantem sua segurança em 6 pilares.
+                  Critérios clínicos que garantem segurança.
                 </p>
               </div>
 
@@ -255,12 +255,12 @@ export default function LandingPage() {
                 ].map((item) => (
                   <div
                     key={`${item.letter}-${item.label}`}
-                    className="flex items-center gap-3 rounded-xl border border-pink-100 bg-pink-50/50 px-4 py-3"
+                    className="flex items-center gap-2 sm:gap-3 rounded-xl border border-pink-100 bg-pink-50/50 px-3 py-2 sm:px-4 sm:py-3"
                   >
-                    <div className="h-8 w-8 rounded-full bg-pink-500 text-white flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
+                    <div className="h-6 w-6 sm:h-8 sm:w-8 rounded-full bg-pink-500 text-white flex items-center justify-center font-bold text-xs sm:text-sm shadow-sm shrink-0">
                       {item.letter}
                     </div>
-                    <p className="text-sm font-semibold text-gray-800">
+                    <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate">
                       {item.label}
                     </p>
                   </div>
@@ -269,55 +269,55 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="bg-gray-900 text-white rounded-3xl p-8 sm:p-12 text-center space-y-6">
-            <h3 className="text-2xl font-bold">O que o app decide por você?</h3>
-            <div className="grid sm:grid-cols-3 gap-4 text-left max-w-4xl mx-auto">
+          <div className="bg-gray-900 text-white rounded-2xl sm:rounded-3xl p-6 sm:p-12 text-center space-y-6">
+            <h3 className="text-xl sm:text-2xl font-bold">O que o app decide por você?</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left max-w-4xl mx-auto">
               <div className="bg-green-500/10 border border-green-500/30 p-4 rounded-xl">
                 <p className="font-bold text-green-400 mb-1">🟢 TREINAR</p>
                 <p className="text-sm text-gray-300">Exercícios de força e cardio leve quando você está bem.</p>
               </div>
               <div className="bg-yellow-500/10 border border-yellow-500/30 p-4 rounded-xl">
                 <p className="font-bold text-yellow-400 mb-1">🟡 ADAPTAR</p>
-                <p className="text-sm text-gray-300">Movimentos na cadeira ou leves para dias de fadiga moderada.</p>
-                    </div>
+                <p className="text-sm text-gray-300">Movimentos na cadeira ou leves para dias de fadiga.</p>
+              </div>
               <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-xl">
                 <p className="font-bold text-blue-400 mb-1">🔵 RECUPERAR</p>
-                <p className="text-sm text-gray-300">Descanso ativo, respiração e alongamento para dias difíceis.</p>
+                <p className="text-sm text-gray-300">Descanso ativo, respiração e alongamento.</p>
               </div>
             </div>
-            <p className="text-gray-400 text-sm max-w-2xl mx-auto italic">Tudo isso respeitando seus sintomas, medicamentos, fase do tratamento e orientação médica.</p>
+            <p className="text-gray-400 text-xs sm:text-sm max-w-2xl mx-auto italic">Tudo isso respeitando seus sintomas, medicamentos, fase do tratamento e orientação médica.</p>
           </div>
         </section>
 
         {/* BLOCO 7: QUEM É ANDRESSA */}
-        <section className="grid md:grid-cols-2 gap-12 items-center bg-white border border-pink-100 rounded-3xl p-8 shadow-sm">
-          <div className="order-2 md:order-1 space-y-6">
-            <div>
-              <p className="text-sm uppercase tracking-widest text-pink-600 font-bold mb-2">Quem criou</p>
-              <h2 className="text-3xl font-bold text-gray-900">Andressa Semionatto</h2>
+        <section className="grid md:grid-cols-2 gap-8 sm:gap-12 items-center bg-white border border-pink-100 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-sm">
+          <div className="order-2 md:order-1 space-y-4 sm:space-y-6">
+            <div className="text-center md:text-left">
+              <p className="text-xs uppercase tracking-widest text-pink-600 font-bold mb-2">Quem criou</p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Andressa Semionatto</h2>
             </div>
-            <div className="space-y-4 text-gray-700 leading-relaxed">
+            <div className="space-y-3 sm:space-y-4 text-gray-700 leading-relaxed text-sm sm:text-base text-justify md:text-left">
               <p>Profissional de Educação Física, especialista em exercício físico para pessoas em tratamento oncológico, com atuação clínica e hospitalar.</p>
               <p>Já acompanhou mais de <strong>3.000 pacientes</strong> no Brasil e no mundo, ajudando pessoas com câncer a se movimentarem com segurança, autonomia e foco em qualidade de vida.</p>
-              <p className="italic font-medium text-gray-900 border-l-4 border-pink-500 pl-4">"Este aplicativo é a tradução prática da minha experiência clínica. Aqui, o exercício respeita o seu tratamento — não o contrário."</p>
+              <p className="italic font-medium text-gray-900 border-l-4 border-pink-500 pl-4 py-1">"Este aplicativo é a tradução prática da minha experiência clínica. Aqui, o exercício respeita o seu tratamento."</p>
             </div>
-            <Button variant="outline" className="border-pink-200 text-pink-700" onClick={() => window.open("https://instagram.com/andressa.oncopersonal", "_blank")}>
+            <Button variant="outline" className="border-pink-200 text-pink-700 w-full sm:w-auto" onClick={() => window.open("https://instagram.com/andressa.oncopersonal", "_blank")}>
               Conhecer no Instagram
             </Button>
           </div>
           <div className="order-1 md:order-2 flex justify-center">
-            <div className="w-64 h-64 sm:w-80 sm:h-80 rounded-full overflow-hidden border-4 border-pink-50 shadow-xl">
+            <div className="w-48 h-48 sm:w-80 sm:h-80 rounded-full overflow-hidden border-4 border-pink-50 shadow-xl">
               <img src="/fotoAndressa.jpeg" alt="Andressa Semionatto" className="w-full h-full object-cover" />
             </div>
           </div>
         </section>
 
         {/* CTA FINAL */}
-        <section className="text-center space-y-8 py-10">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Você não precisa decidir sozinha.</h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">Tenha o movimento certo, no dia certo.</p>
+        <section className="text-center space-y-6 sm:space-y-8 py-6 sm:py-10">
+          <h2 className="text-2xl sm:text-4xl font-bold text-gray-900">Você não precisa decidir sozinha.</h2>
+          <p className="text-base sm:text-xl text-gray-600 max-w-2xl mx-auto">Tenha o movimento certo, no dia certo.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="bg-pink-600 hover:bg-pink-700 text-white text-lg px-10 py-6 h-auto shadow-lg hover:shadow-xl transition-all" onClick={handleStart}>
+            <Button className="bg-pink-600 hover:bg-pink-700 text-white text-lg px-8 py-6 h-auto shadow-lg hover:shadow-xl transition-all w-full sm:w-auto" onClick={handleStart}>
               Quero me movimentar com segurança
             </Button>
           </div>
