@@ -722,23 +722,57 @@ export async function addWaterIntake(userId: number, amountMl: number): Promise<
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Normalize to start of day
 
-  return await prisma.dailyHydration.upsert({
+  // Try to find existing record first
+  const existing = await prisma.dailyHydration.findUnique({
     where: {
       userId_date: {
         userId,
         date: today,
       },
     },
-    update: {
-      currentIntakeMl: { increment: amountMl },
-    },
-    create: {
-      userId,
-      date: today,
-      currentIntakeMl: amountMl,
-      dailyGoalMl: 2000, // Default goal
-    },
   });
+
+  if (existing) {
+    return await prisma.dailyHydration.update({
+      where: {
+        userId_date: {
+          userId,
+          date: today,
+        },
+      },
+      data: {
+        currentIntakeMl: { increment: amountMl },
+      },
+    });
+  }
+
+  // If not found, try create
+  try {
+    return await prisma.dailyHydration.create({
+      data: {
+        userId,
+        date: today,
+        currentIntakeMl: amountMl,
+        dailyGoalMl: 2000,
+      },
+    });
+  } catch (error: any) {
+    // If creaet fails due to unique constraint race condition, fallback to update
+    if (error.code === "P2002") {
+      return await prisma.dailyHydration.update({
+        where: {
+          userId_date: {
+            userId,
+            date: today,
+          },
+        },
+        data: {
+          currentIntakeMl: { increment: amountMl },
+        },
+      });
+    }
+    throw error;
+  }
 }
 
 export async function getTodayHydration(userId: number): Promise<DailyHydration | null> {
