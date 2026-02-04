@@ -40,6 +40,7 @@ export type PatientProfile = {
   dateOfBirth: Date | null;
   gender: string | null;
   observations: unknown | null;
+  hydrationGoalMl: number;
   createdAt: Date;
   updatedAt: Date;
 };

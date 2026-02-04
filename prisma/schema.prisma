@@ -83,6 +83,7 @@ model PatientProfile {
   dateOfBirth       DateTime? @db.Date
   gender            String?   @db.VarChar(50)
   observations      Json?
+  hydrationGoalMl   Int       @default(2000)
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   

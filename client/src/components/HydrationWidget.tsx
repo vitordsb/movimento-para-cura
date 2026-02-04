@@ -1,16 +1,29 @@
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Droplet, Plus, Minus } from "lucide-react";
+import { Droplet, Plus, Settings2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 export function HydrationWidget() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newGoal, setNewGoal] = useState<string>("2000");
+
   const utils = trpc.useUtils();
   const { data: hydration, isLoading } = trpc.health.getHydration.useQuery();
   
   const addWater = trpc.health.addWater.useMutation({
     onMutate: async ({ amountMl }) => {
-      // Optimistic Update
       await utils.health.getHydration.cancel();
       const prevData = utils.health.getHydration.getData();
       
@@ -32,11 +45,31 @@ export function HydrationWidget() {
     },
   });
 
+  const updateGoal = trpc.health.updateGoal.useMutation({
+    onSuccess: () => {
+      utils.health.getHydration.invalidate();
+      setIsDialogOpen(false);
+      toast.success("Meta atualizada!");
+    },
+    onError: (err) => {
+      toast.error("Erro ao atualizar meta: " + err.message);
+    }
+  });
+
   if (isLoading) return <div className="h-32 bg-blue-50/50 rounded-xl animate-pulse"></div>;
 
   const current = hydration?.currentIntakeMl || 0;
   const goal = hydration?.dailyGoalMl || 2000;
   const percentage = Math.min((current / goal) * 100, 100);
+
+  const handleUpdateGoal = () => {
+    const val = parseInt(newGoal);
+    if (isNaN(val) || val < 500 || val > 5000) {
+      toast.error("A meta deve ser entre 500ml e 5000ml");
+      return;
+    }
+    updateGoal.mutate({ goalMl: val });
+  };
 
   return (
     <Card className="border-blue-100 bg-gradient-to-br from-blue-50 to-white shadow-sm overflow-hidden">
@@ -48,7 +81,41 @@ export function HydrationWidget() {
             </div>
             <div>
               <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Hidratação</p>
-              <p className="text-sm text-gray-500">Meta: {goal / 1000}L</p>
+
+              <Dialog open={isDialogOpen} onOpenChange={(open) => {
+                if (open) setNewGoal(goal.toString());
+                setIsDialogOpen(open);
+              }}>
+                <DialogTrigger asChild>
+                  <button className="text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1 transition-colors">
+                    Meta: {goal / 1000}L <Settings2 className="w-3 h-3" />
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-xs">
+                  <DialogHeader>
+                    <DialogTitle>Definir Meta Diária</DialogTitle>
+                  </DialogHeader>
+                  <div className="py-2 space-y-4">
+                    <p className="text-sm text-gray-600">
+                      Quanto de água você quer beber por dia? (em ml)
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        value={newGoal}
+                        onChange={(e) => setNewGoal(e.target.value)}
+                        className="text-lg"
+                      />
+                      <span className="text-gray-500 text-sm">ml</span>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button onClick={handleUpdateGoal} disabled={updateGoal.isPending} className="w-full bg-blue-600 hover:bg-blue-700">
+                      Salvar Meta
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
           <p className="text-2xl font-bold text-gray-900">

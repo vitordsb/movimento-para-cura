@@ -722,18 +722,25 @@ export async function addWaterIntake(userId: number, amountMl: number): Promise<
   const dateStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
   const now = new Date();
 
+  // 1. Get User's Hydration Goal
+  // We can fetch the PatientProfile or use a default
+  const profile = await prisma.patientProfile.findUnique({ where: { userId } });
+  const userGoal = profile?.hydrationGoalMl || 2000;
+
   // Use Raw SQL for atomic upsert (Insert on Duplicate Key Update)
-  // This bypasses Prisma's date object complexities and race conditions
+  // We set dailyGoalMl to the user's preference on INSERT.
+  // On UPDATE, we preserve existing dailyGoalMl (or we could update it? Let's keep it to preserve history if goal changed today)
+  // Actually, if user changes goal, they usually want it effectively immediately.
+  // But let's stick to: INSERT uses current preference. UPDATE increments water.
   await prisma.$executeRaw`
     INSERT INTO daily_hydrations (userId, date, currentIntakeMl, dailyGoalMl, updatedAt)
-    VALUES (${userId}, ${dateStr}, ${amountMl}, 2000, ${now})
+    VALUES (${userId}, ${dateStr}, ${amountMl}, ${userGoal}, ${now})
     ON DUPLICATE KEY UPDATE
     currentIntakeMl = currentIntakeMl + ${amountMl},
     updatedAt = ${now}
   `;
 
   // Fetch the record to return it
-  // Try Prisma first
   const record = await prisma.dailyHydration.findFirst({
     where: {
       userId,
@@ -754,10 +761,8 @@ export async function addWaterIntake(userId: number, amountMl: number): Promise<
   `;
 
   if (rawRecords[0]) {
-    // Manually map raw result to expected types if needed (Prisma usually handles it)
     return {
       ...rawRecords[0],
-      // Ensure date is a Date object
       date: new Date(rawRecords[0].date),
       updatedAt: new Date(rawRecords[0].updatedAt),
     };
@@ -769,8 +774,7 @@ export async function addWaterIntake(userId: number, amountMl: number): Promise<
 export async function getTodayHydration(userId: number): Promise<DailyHydration | null> {
   const dateStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
-  // Use findFirst which is more robust than findUnique for Date matching
-  return await prisma.dailyHydration.findFirst({
+  const record = await prisma.dailyHydration.findFirst({
     where: {
       userId,
       date: {
@@ -778,6 +782,46 @@ export async function getTodayHydration(userId: number): Promise<DailyHydration 
       },
     },
   });
+
+  if (record) return record;
+
+  // If no record exists for today, return a "virtual" record with the user's goal
+  // instead of null, so the frontend sees the correct goal (e.g. 3000ml) immediately
+  const profile = await prisma.patientProfile.findUnique({ where: { userId } });
+  const userGoal = profile?.hydrationGoalMl || 2000;
+
+  return {
+    id: 0, // Virtual ID
+    userId,
+    date: new Date(dateStr),
+    currentIntakeMl: 0,
+    dailyGoalMl: userGoal,
+    updatedAt: new Date(),
+  };
+}
+
+export async function updateHydrationGoal(userId: number, newGoalMl: number) {
+  // 1. Update Profile
+  await prisma.patientProfile.upsert({
+    where: { userId },
+    update: { hydrationGoalMl: newGoalMl },
+    create: {
+      userId,
+      hydrationGoalMl: newGoalMl,
+      // Defaults for other required fields if profile is missing (unlikely for patient but possible)
+      // Actually PatientProfile creation happens at registration usually.
+    }
+  });
+
+  // 2. Update TODAY's record if it exists, so user sees change immediately
+  const dateStr = new Date().toISOString().split("T")[0];
+  await prisma.$executeRaw`
+    UPDATE daily_hydrations 
+    SET dailyGoalMl = ${newGoalMl}
+    WHERE userId = ${userId} AND date = ${dateStr}
+  `;
+
+  return { success: true };
 }
 
 export async function logSymptom(userId: number, input: { symptom: string, intensity: number, notes?: string | null }) {
