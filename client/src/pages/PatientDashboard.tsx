@@ -1,16 +1,20 @@
+import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle, CheckCircle, XCircle, TrendingUp } from "lucide-react";
+import { AlertCircle, CheckCircle, XCircle, TrendingUp, HeartPulse, FileText, Wind, Plus } from "lucide-react";
 import { useLocation } from "wouter";
 import { format, subDays } from "date-fns";
 import { skipToken } from "@tanstack/react-query";
 import { AppHeader } from "@/components/AppHeader";
+import { HydrationWidget } from "@/components/HydrationWidget";
+import { SOSAnxiety } from "@/components/SOSAnxiety";
 
 export default function PatientDashboard() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
+  const [showSOS, setShowSOS] = useState(false);
 
   const needsAnamnesis = user?.role === "PATIENT" && user?.hasCompletedAnamnesis === false;
 
@@ -82,8 +86,12 @@ export default function PatientDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-green-50 pb-20">
       <AppHeader />
+
+      {/* SOS Overlay */}
+      {showSOS && <SOSAnxiety onClose={() => setShowSOS(false)} />}
+
       <div className="p-4">
       <div className="max-w-4xl mx-auto space-y-6">
         {needsAnamnesis && (
@@ -114,14 +122,16 @@ export default function PatientDashboard() {
         </Card>
 
         {/* Boas-vindas */}
-          <div role="status" aria-live="polite">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Olá, {user?.name}! 👋</h1>
-          <p className="text-gray-600">
-            {todayResponse
-              ? "Você já completou a checagem de bem-estar de hoje."
-              : "Vamos ver como você está se sentindo hoje."}
-          </p>
-        </div>
+          <div role="status" aria-live="polite" className="flex justify-between items-end">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Olá, {user?.name}! 👋</h1>
+              <p className="text-gray-600">
+                {todayResponse
+                  ? "Você já completou a checagem de bem-estar de hoje."
+                  : "Vamos ver como você está se sentindo hoje."}
+              </p>
+            </div>
+          </div>
 
         {/* Today's Status */}
         {todayResponse ? (
@@ -178,6 +188,9 @@ export default function PatientDashboard() {
           </Card>
         )}
 
+          {/* Hydration Widget */}
+          <HydrationWidget />
+
         {/* Last 7 Days */}
           <Card className="border-0 shadow-lg" role="region" aria-labelledby="history-title">
           <CardHeader>
@@ -227,30 +240,53 @@ export default function PatientDashboard() {
           </CardContent>
         </Card>
 
-        {/* Quick Links */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Quick Links Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Button
               variant="outline"
               onClick={() => navigate("/history")}
-                className="!h-auto min-h-[100px] py-4 flex flex-col items-center gap-2"
+              className="!h-auto min-h-[100px] py-4 flex flex-col items-center gap-2 hover:border-pink-300 hover:bg-pink-50 transition-all text-gray-700"
               disabled={needsAnamnesis}
             >
               <span className="text-2xl">📊</span>
-              <span className="font-semibold">Ver histórico completo</span>
+              <span className="font-semibold">Histórico Completo</span>
             </Button>
 
           <Button
             variant="outline"
             onClick={() => navigate("/exercises")}
-              className="!h-auto min-h-[100px] py-4 flex flex-col items-center gap-2"
+              className="!h-auto min-h-[100px] py-4 flex flex-col items-center gap-2 hover:border-blue-300 hover:bg-blue-50 transition-all text-gray-700"
             disabled={needsAnamnesis}
           >
             <span className="text-2xl">💪</span>
-            <span className="font-semibold">Biblioteca de exercícios</span>
+              <span className="font-semibold">Biblioteca de Exercícios</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={() => navigate("/journal")}
+              className="!h-auto min-h-[100px] py-4 flex flex-col items-center gap-2 hover:border-purple-300 hover:bg-purple-50 transition-all text-gray-700"
+              disabled={needsAnamnesis}
+            >
+              <span className="text-2xl">📝</span>
+              <span className="font-semibold">Diário de Sintomas</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={() => setShowSOS(true)}
+              className="!h-auto min-h-[100px] py-4 flex flex-col items-center gap-2 bg-cyan-50 border-cyan-200 hover:bg-cyan-100 hover:border-cyan-300 hover:shadow-md transition-all text-cyan-800"
+            >
+              <Wind className="w-8 h-8 mb-1" />
+              <span className="font-bold">SOS Ansiedade</span>
           </Button>
         </div>
       </div>
     </div>
+
+      {/* Floating SOS Button for quick access on mobile scroll (optional, but requested as 'botão de respiro') 
+        Currently added to grid, but FAB is nice. Let's stick to Grid to avoid clutter unless requested.
+    */}
     </div>
   );
 }

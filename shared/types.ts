@@ -125,4 +125,22 @@ export type ExerciseTutorial = {
   updatedAt: Date;
 };
 
+export type DailyHydration = {
+  id: number;
+  userId: number;
+  date: Date;
+  currentIntakeMl: number;
+  dailyGoalMl: number;
+  updatedAt: Date;
+};
+
+export type SymptomLog = {
+  id: number;
+  userId: number;
+  symptom: string;
+  intensity: number;
+  notes?: string | null;
+  occurredAt: Date;
+};
+
 export * from "./_core/errors";

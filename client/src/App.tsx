@@ -16,6 +16,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AnamnesisPage from "./pages/AnamnesisPage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
+import JournalPage from "./pages/JournalPage";
 import NotFound from "./pages/NotFound";
 import UnderConstruction from "./pages/UnderConstruction";
 
@@ -35,6 +36,9 @@ function Router() {
       <Route path="/exercises" component={ExercisesPage} />
       <Route path="/profile" component={ProfilePage} />
       <Route path="/settings" component={SettingsPage} />
+      <Route path="/profile" component={ProfilePage} />
+      <Route path="/settings" component={SettingsPage} />
+      <Route path="/journal" component={JournalPage} />
       <Route path="/em-desenvolvimento" component={UnderConstruction} />
 
       {/* Admin routes */}

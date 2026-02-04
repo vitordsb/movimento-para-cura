@@ -715,3 +715,61 @@ export async function updateExerciseTutorialById(
 export async function deleteExerciseTutorialById(id: number): Promise<void> {
   return deleteExerciseTutorial(id);
 }
+
+// Health Tracking Methods
+
+export async function addWaterIntake(userId: number, amountMl: number): Promise<DailyHydration> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Normalize to start of day
+
+  return await prisma.dailyHydration.upsert({
+    where: {
+      userId_date: {
+        userId,
+        date: today,
+      },
+    },
+    update: {
+      currentIntakeMl: { increment: amountMl },
+    },
+    create: {
+      userId,
+      date: today,
+      currentIntakeMl: amountMl,
+      dailyGoalMl: 2000, // Default goal
+    },
+  });
+}
+
+export async function getTodayHydration(userId: number): Promise<DailyHydration | null> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return await prisma.dailyHydration.findUnique({
+    where: {
+      userId_date: {
+        userId,
+        date: today,
+      },
+    },
+  });
+}
+
+export async function logSymptom(userId: number, input: { symptom: string, intensity: number, notes?: string | null }) {
+  return await prisma.symptomLog.create({
+    data: {
+      userId,
+      symptom: input.symptom,
+      intensity: input.intensity,
+      notes: input.notes,
+    },
+  });
+}
+
+export async function getRecentSymptoms(userId: number, limit = 20) {
+  return await prisma.symptomLog.findMany({
+    where: { userId },
+    orderBy: { occurredAt: "desc" },
+    take: limit,
+  });
+}
