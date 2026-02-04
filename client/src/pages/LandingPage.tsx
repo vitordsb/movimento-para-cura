@@ -131,22 +131,24 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-green-50 text-gray-900">
       <header className="sticky top-0 z-20 border-b border-pink-100/70 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-3">
-            <Heart className="h-8 w-8 text-pink-600" />
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:py-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Heart className="h-6 w-6 sm:h-8 sm:w-8 text-pink-600 shrink-0" />
             <div>
-              <p className="text-xs uppercase tracking-wide text-pink-600 font-semibold">
+              <p className="text-[10px] sm:text-xs uppercase tracking-wide text-pink-600 font-semibold leading-tight">
                 Movimento para Cura
               </p>
-              <p className="text-sm text-gray-700">Por Andressa Semionatto</p>
+              <p className="text-xs sm:text-sm text-gray-700 hidden sm:block">Por Andressa Semionatto</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" className="border-pink-200 text-pink-700" onClick={() => navigate("/auth")}>
-              Entrar / Criar conta
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Button variant="outline" size="sm" className="border-pink-200 text-pink-700 h-8 sm:h-10 text-xs sm:text-sm px-3" onClick={() => navigate("/auth")}>
+              <span className="sm:hidden">Entrar</span>
+              <span className="hidden sm:inline">Entrar / Criar conta</span>
             </Button>
-            <Button className="bg-pink-500 hover:bg-pink-600" onClick={handleStart}>
-              Experimente grátis
+            <Button size="sm" className="bg-pink-500 hover:bg-pink-600 h-8 sm:h-10 text-xs sm:text-sm px-3" onClick={handleStart}>
+              <span className="sm:hidden">Começar</span>
+              <span className="hidden sm:inline">Experimente grátis</span>
             </Button>
           </div>
         </div>
