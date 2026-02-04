@@ -12,7 +12,10 @@ export default function HistoryPage() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
 
-  const { data: history = [], isLoading } = trpc.responses.getMyHistory.useQuery({ limit: 50 });
+  const { data: quizHistory = [], isLoading: loadingQuiz } = trpc.responses.getMyHistory.useQuery({ limit: 50 });
+  const { data: hydrationHistory = [], isLoading: loadingHydro } = trpc.health.getHistory.useQuery({ limit: 30 });
+
+  const isLoading = loadingQuiz || loadingHydro;
 
   if (isLoading) {
     return (
@@ -25,8 +28,14 @@ export default function HistoryPage() {
     );
   }
 
-  const goodDaysCount = history.filter((r) => r.isGoodDayForExercise).length;
-  const totalDays = history.length;
+  // Merge and Sort Histories
+  const combinedHistory = [
+    ...quizHistory.map(r => ({ ...r, type: 'QUIZ' as const, date: new Date(r.responseDate) })),
+    ...hydrationHistory.map(h => ({ ...h, type: 'HYDRATION' as const, date: new Date(h.date) }))
+  ].sort((a, b) => b.date.getTime() - a.date.getTime());
+
+  const goodDaysCount = quizHistory.filter((r) => r.isGoodDayForExercise).length;
+  // Hydration Stats? Maybe later.
 
   const getQuestionText = (qId: number, quiz: any) => {
     return quiz?.questions?.find((q: any) => q.id === qId)?.text || "Pergunta removida";
@@ -34,21 +43,12 @@ export default function HistoryPage() {
 
   const getAnswerText = (answer: any, quiz: any) => {
     const question = quiz?.questions?.find((q: any) => q.id === answer.questionId);
-
-    // Try to find matching option first (for Multiple Choice)
     if (question?.options?.length > 0) {
-      // Logic assumes answerValue matches scoreValue or we need a way to link back.
-      // Often answerValue is stored as the value. 
-      // If we can't find exact match, return value.
       const option = question.options.find((opt: any) => opt.scoreValue === answer.answerValue || opt.text === answer.answerValue);
       if (option) return option.text;
     }
-
-    // Default formatting
     if (answer.answerValue === "YES" || answer.answerValue === "true") return "Sim";
     if (answer.answerValue === "NO" || answer.answerValue === "false") return "Não";
-
-    // Scale 0-10 or text
     return answer.answerValue;
   };
 
@@ -68,7 +68,7 @@ export default function HistoryPage() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Acompanhamento</h1>
             <p className="text-gray-600 text-sm">
-              Seu histórico de bem-estar dia a dia.
+              Seu histórico de bem-estar e hidratação.
             </p>
           </div>
         </div>
@@ -82,7 +82,7 @@ export default function HistoryPage() {
               </div>
               <div>
                 <p className="text-xs text-gray-500 uppercase font-semibold">Registros</p>
-                <p className="text-xl font-bold text-gray-900">{totalDays}</p>
+                <p className="text-xl font-bold text-gray-900">{quizHistory.length}</p>
               </div>
             </CardContent>
           </Card>
@@ -100,7 +100,7 @@ export default function HistoryPage() {
         </div>
 
         {/* History List */}
-        {history.length === 0 ? (
+        {combinedHistory.length === 0 ? (
           <div className="text-center py-12">
             <div className="bg-amber-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="w-8 h-8 text-amber-500" />
@@ -118,13 +118,47 @@ export default function HistoryPage() {
           </div>
         ) : (
             <Accordion type="single" collapsible className="space-y-3">
-              {history.map((response: any) => {
-                const date = new Date(response.responseDate);
+              {combinedHistory.map((item: any) => {
+                const date = item.date;
+
+                // --- RENDER HYDRATION CARD ---
+                if (item.type === 'HYDRATION') {
+                  const metGoal = item.currentIntakeMl >= item.dailyGoalMl;
+                  return (
+                    <div key={`hydro-${item.id}`} className="bg-white border border-blue-100 rounded-xl shadow-sm p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${metGoal ? 'bg-blue-100' : 'bg-yellow-50'}`}>
+                          <div className="text-lg">💧</div>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">
+                            {format(date, "dd 'de' MMMM", { locale: ptBR })}
+                          </p>
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className={metGoal ? "text-blue-600 font-medium" : "text-yellow-600"}>
+                              {Math.round(item.currentIntakeMl / 1000 * 10) / 10}L <span className="text-gray-400">/ {item.dailyGoalMl / 1000}L</span>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        {metGoal ? (
+                          <span className="text-xs font-bold bg-blue-100 text-blue-700 px-3 py-1 rounded-full">Meta Batida!</span>
+                        ) : (
+                          <span className="text-xs font-bold bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full">Quase lá</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+
+                // --- RENDER QUIZ CARD ---
+                const response = item;
                 const isGood = response.isGoodDayForExercise;
 
                 return (
                   <AccordionItem
-                    key={response.id}
+                    key={`quiz-${response.id}`}
                     value={response.id.toString()}
                     className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden px-0"
                   >
@@ -150,8 +184,8 @@ export default function HistoryPage() {
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
-                          <Clock className="w-3 h-3" />
-                          <span>{format(date, "HH:mm")}</span>
+                            <Trophy className="w-3 h-3" />
+                            <span>Check-in Diário</span>
                           <span className="text-gray-300">•</span>
                           <span className="truncate max-w-[150px]">{response.recommendedExerciseType}</span>
                         </div>
@@ -161,6 +195,7 @@ export default function HistoryPage() {
 
                   <AccordionContent className="px-4 pt-2 pb-4 bg-gray-50/50 border-t border-gray-100">
                     <div className="space-y-4 mt-2">
+                        {/* ... details ... */}
                       <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Respostas Detalhadas</h4>
 
                       {response.answers && response.answers.length > 0 ? (

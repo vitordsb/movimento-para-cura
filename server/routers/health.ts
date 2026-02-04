@@ -6,6 +6,7 @@ import {
   logSymptom,
   getRecentSymptoms,
   updateHydrationGoal,
+  getHydrationHistory,
 } from "../db";
 
 export const healthRouter = router({
@@ -41,5 +42,11 @@ export const healthRouter = router({
         .input(z.object({ goalMl: z.number().min(500).max(5000) }))
         .mutation(async ({ input, ctx }) => {
           return await updateHydrationGoal(ctx.user.id, input.goalMl);
+    }),
+
+  getHistory: patientProcedure
+    .input(z.object({ limit: z.number().default(30) }))
+    .query(async ({ input, ctx }) => {
+      return await getHydrationHistory(ctx.user.id, input.limit);
     }),
 });

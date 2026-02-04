@@ -824,6 +824,14 @@ export async function updateHydrationGoal(userId: number, newGoalMl: number) {
   return { success: true };
 }
 
+export async function getHydrationHistory(userId: number, limit = 30): Promise<DailyHydration[]> {
+  return await prisma.dailyHydration.findMany({
+    where: { userId },
+    orderBy: { date: "desc" },
+    take: limit,
+  });
+}
+
 export async function logSymptom(userId: number, input: { symptom: string, intensity: number, notes?: string | null }) {
   return await prisma.symptomLog.create({
     data: {
