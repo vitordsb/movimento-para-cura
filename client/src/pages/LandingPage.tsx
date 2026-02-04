@@ -230,6 +230,45 @@ export default function LandingPage() {
             ))}
           </div>
 
+          <div className="bg-white border border-pink-100 rounded-3xl p-8 shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-8 items-center">
+              <div className="sm:w-48 shrink-0 text-center sm:text-left">
+                <p className="text-xs uppercase tracking-wide text-gray-500 font-bold mb-1">
+                  Nossa Metodologia
+                </p>
+                <p className="text-4xl font-extrabold text-pink-600 leading-none">
+                  SINAIS
+                </p>
+                <p className="mt-2 text-sm text-gray-600">
+                  Critérios clínicos que garantem sua segurança em 6 pilares.
+                </p>
+              </div>
+
+              <div className="flex-1 w-full grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {[
+                  { letter: "S", label: "Sintomas" },
+                  { letter: "I", label: "Intensidade" },
+                  { letter: "N", label: "Nível de energia" },
+                  { letter: "A", label: "Ambiente clínico" },
+                  { letter: "I", label: "Intercorrências" },
+                  { letter: "S", label: "Segurança" },
+                ].map((item) => (
+                  <div
+                    key={`${item.letter}-${item.label}`}
+                    className="flex items-center gap-3 rounded-xl border border-pink-100 bg-pink-50/50 px-4 py-3"
+                  >
+                    <div className="h-8 w-8 rounded-full bg-pink-500 text-white flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
+                      {item.letter}
+                    </div>
+                    <p className="text-sm font-semibold text-gray-800">
+                      {item.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
           <div className="bg-gray-900 text-white rounded-3xl p-8 sm:p-12 text-center space-y-6">
             <h3 className="text-2xl font-bold">O que o app decide por você?</h3>
             <div className="grid sm:grid-cols-3 gap-4 text-left max-w-4xl mx-auto">
