@@ -169,7 +169,7 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-3 pt-4 justify-center lg:justify-start">
               <Button className="bg-pink-600 hover:bg-pink-700 text-white text-lg px-8 py-6 h-auto w-full sm:w-auto shadow-lg" onClick={handleStart}>
-                Quero saber o que é seguro
+                Saber se posso treinar hoje
               </Button>
             </div>
           </div>
