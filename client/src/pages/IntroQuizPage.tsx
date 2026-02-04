@@ -123,17 +123,20 @@ export default function IntroQuizPage() {
             
             {currentQuestion?.questionType === "MULTIPLE_CHOICE" && (
                 <div className="space-y-2">
-                    {currentQuestion?.options?.map((option) => (
+                {currentQuestion?.options?.map((option) => {
+                  const val = (option.scoreValue !== "0" && option.scoreValue !== "0.00") ? option.scoreValue : option.text;
+                  return (
                         <Button
                             key={option.id}
-                            onClick={() => handleAnswer(option.scoreValue || option.text)} // Fallback if scoreValue empty, though seed sets generic strings
-                            variant={answers[currentQuestion.id] === (option.scoreValue || option.text) ? "default" : "outline"}
+                            onClick={() => handleAnswer(val)}
+                            variant={answers[currentQuestion.id] === val ? "default" : "outline"}
                             className="w-full justify-start py-4 text-left px-4 h-auto whitespace-normal"
                         >
-                             {answers[currentQuestion.id] === (option.scoreValue || option.text) && <CheckCircle className="w-5 h-5 mr-3 shrink-0 text-white" />}
+                            {answers[currentQuestion.id] === val && <CheckCircle className="w-5 h-5 mr-3 shrink-0 text-white" />}
                              <span className="flex-1">{option.text}</span>
                         </Button>
-                    ))}
+                      )
+                    })}
                 </div>
             )}
           </CardContent>
