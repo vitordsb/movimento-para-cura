@@ -389,11 +389,11 @@ export default function QuizPage() {
                 name: "Amostra gratuita",
                 price: "R$ 0",
                 description: "Teste o quiz e veja o fluxo. Resultado completo apenas para assinantes.",
-                action: "Continuar testando",
+                action: "Fazer login para ver",
                 highlight: false,
                 onClick: () => {
                   setShowPaywall(false);
-                  navigate("/em-desenvolvimento");
+                  navigate("/auth");
                 },
               },
               {
