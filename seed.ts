@@ -178,36 +178,136 @@ async function seed() {
 
   await prisma.quizQuestion.deleteMany({ where: { quizId: introQuiz.id } });
 
-  // Add all 15 questions for Intro Quiz
-  // Just adding placeholders for first few to save space/time, as logic primarily uses Daily Quiz.
-  // Actually, user wants the intro quiz to work.
-  // I will add them all.
-  const introQuestions = [
-    "Seu médico ou equipe de saúde já comentou que o exercício físico pode fazer parte do seu tratamento?",
-    "Em que fase do tratamento você está agora?",
-    "Você realizou alguma cirurgia relacionada ao câncer recentemente?",
-    "Você possui alguma restrição médica atual para esforços físicos?",
-    "Hoje, o que mais te impede ou te dá medo de se movimentar?",
-    "Você sente algum desses sintomas com frequência?",
-    "Como você se sente fisicamente hoje?",
-    "Antes do diagnóstico, você tinha o hábito de se exercitar?",
-    "Depois do diagnóstico, você tentou se exercitar em algum momento?",
-    "Você sente que hoje está mais sedentária(o) do que gostaria?",
-    "O que você mais gostaria de ter neste momento?",
-    "Se existisse um sistema que avalia como você está hoje e te orienta se é dia de treinar, adaptar ou descansar, isso ajudaria você?",
-    "Qual frase mais representa você hoje?",
-    "Você acredita que o exercício físico pode ajudar no seu tratamento e na sua qualidade de vida, se feito da forma certa?",
-    "Você gostaria de ter um acompanhamento individual com uma profissional especializada...?",
-  ];
+  // 1. Orientação Médica
+  await createQuestion(prisma, introQuiz.id, 1, "Seu médico ou equipe de saúde já comentou que o exercício físico pode fazer parte do seu tratamento?", "MULTIPLE_CHOICE", [
+    { text: "Sim, foi orientado", value: "ORIENTED_YES" },
+    { text: "Não comentou, mas não proibiu", value: "ORIENTED_NEUTRAL" },
+    { text: "Já ouvi opiniões diferentes", value: "ORIENTED_MIXED" },
+    { text: "Não, nunca falaram sobre isso", value: "ORIENTED_NO" }
+  ]);
 
-  for (let i = 0; i < introQuestions.length; i++) {
-    // Defaulting to generic Multiple Choice for simplicity in seed unless specified
-    await createQuestion(prisma, introQuiz.id, i + 1, introQuestions[i], "MULTIPLE_CHOICE", [
-      { text: "Opção 1", value: "OPT_1" }, // Placeholder options since logic mostly depends on completion or specific flags not detailed
-      { text: "Opção 2", value: "OPT_2" }
-    ]);
-  }
-  console.log("✅ Avaliação Inicial (Re)criada.");
+  // 2. Fase do Tratamento
+  await createQuestion(prisma, introQuiz.id, 2, "Em que fase do tratamento você está agora?", "MULTIPLE_CHOICE", [
+    { text: "Antes de iniciar quimioterapia ou radioterapia", value: "STAGE_PRE" },
+    { text: "Em quimioterapia", value: "STAGE_CHEMO" },
+    { text: "Em radioterapia", value: "STAGE_RADIO" },
+    { text: "Em hormonioterapia", value: "STAGE_HORMONE" },
+    { text: "Em pós-cirúrgico", value: "STAGE_POST_OP" },
+    { text: "Em acompanhamento / remissão", value: "STAGE_REMISSION" }
+  ]);
+
+  // 3. Cirurgia Recente
+  await createQuestion(prisma, introQuiz.id, 3, "Você realizou alguma cirurgia relacionada ao câncer recentemente?", "MULTIPLE_CHOICE", [
+    { text: "Não", value: "SURGERY_NO" },
+    { text: "Sim, há menos de 30 dias", value: "SURGERY_LESS_30" },
+    { text: "Sim, entre 1 e 3 meses", value: "SURGERY_1_3_MONTHS" },
+    { text: "Sim, há mais de 3 meses", value: "SURGERY_MORE_3_MONTHS" }
+  ]);
+
+  // 4. Restrição Médica
+  await createQuestion(prisma, introQuiz.id, 4, "Você possui alguma restrição médica atual para esforços físicos?", "MULTIPLE_CHOICE", [
+    { text: "Não", value: "RESTRICTION_NO" },
+    { text: "Sim, restrições leves", value: "RESTRICTION_LIGHT" },
+    { text: "Sim, restrições importantes", value: "RESTRICTION_HEAVY" },
+    { text: "Não sei informar", value: "RESTRICTION_UNKNOWN" }
+  ]);
+
+  // 5. Medos / Impedimentos
+  await createQuestion(prisma, introQuiz.id, 5, "Hoje, o que mais te impede ou te dá medo de se movimentar?", "MULTIPLE_CHOICE", [
+    { text: "Medo de piorar meu estado de saúde", value: "FEAR_WORSEN" },
+    { text: "Cansaço excessivo", value: "FEAR_FATIGUE" },
+    { text: "Dor", value: "FEAR_PAIN" },
+    { text: "Enjoo / mal-estar", value: "FEAR_NAUSEA" },
+    { text: "Falta de orientação clara", value: "FEAR_INFO" },
+    { text: "Insegurança sobre o que é permitido", value: "FEAR_SAFETY" },
+    { text: "Já tentei antes e não me senti bem", value: "FEAR_BAD_EXP" }
+  ]);
+
+  // 6. Sintomas Frequentes
+  await createQuestion(prisma, introQuiz.id, 6, "Você sente algum desses sintomas com frequência? (Marque os que se aplicam)", "MULTIPLE_CHOICE", [
+    { text: "Fadiga", value: "SYM_FATIGUE" },
+    { text: "Dor", value: "SYM_PAIN" },
+    { text: "Enjoo", value: "SYM_NAUSEA" },
+    { text: "Falta de ar", value: "SYM_BREATH" },
+    { text: "Tontura", value: "SYM_DIZZINESS" },
+    { text: "Fraqueza", value: "SYM_WEAKNESS" },
+    { text: "Inchaço", value: "SYM_SWELLING" },
+    { text: "Nenhum desses", value: "SYM_NONE" }
+  ]);
+
+  // 7. Estado Atual
+  await createQuestion(prisma, introQuiz.id, 7, "Como você se sente fisicamente hoje?", "MULTIPLE_CHOICE", [
+    { text: "Me sinto bem e com energia", value: "FEEL_GOOD" },
+    { text: "Me sinto mais cansada(o) que o normal", value: "FEEL_TIRED" },
+    { text: "Me sinto fraca(o)", value: "FEEL_WEAK" },
+    { text: "Me sinto muito debilitada(o)", value: "FEEL_DEBILITATED" }
+  ]);
+
+  // 8. Hábito Prévio
+  await createQuestion(prisma, introQuiz.id, 8, "Antes do diagnóstico, você tinha o hábito de se exercitar?", "MULTIPLE_CHOICE", [
+    { text: "Sim, regularmente", value: "HABIT_REGULAR" },
+    { text: "Às vezes", value: "HABIT_SOMETIMES" },
+    { text: "Raramente", value: "HABIT_RARELY" },
+    { text: "Nunca", value: "HABIT_NEVER" }
+  ]);
+
+  // 9. Tentativa Pós Diagnóstico
+  await createQuestion(prisma, introQuiz.id, 9, "Depois do diagnóstico, você tentou se exercitar em algum momento?", "MULTIPLE_CHOICE", [
+    { text: "Sim, e me senti bem", value: "TRY_OK" },
+    { text: "Sim, mas fiquei insegura(o)", value: "TRY_INSECURE" },
+    { text: "Sim, mas tive sintomas ruins", value: "TRY_BAD" },
+    { text: "Não tentei por medo", value: "TRY_FEAR" },
+    { text: "Não tentei por falta de orientação", value: "TRY_NO_INFO" }
+  ]);
+
+  // 10. Sedentarismo
+  await createQuestion(prisma, introQuiz.id, 10, "Você sente que hoje está mais sedentária(o) do que gostaria?", "MULTIPLE_CHOICE", [
+    { text: "Sim", value: "SEDENTARY_YES" },
+    { text: "Não", value: "SEDENTARY_NO" },
+    { text: "Às vezes", value: "SEDENTARY_SOMETIMES" }
+  ]);
+
+  // 11. Desejo Atual
+  await createQuestion(prisma, introQuiz.id, 11, "O que você mais gostaria de ter neste momento?", "MULTIPLE_CHOICE", [
+    { text: "Alguém dizendo claramente se posso me exercitar hoje", value: "WISH_CLARITY" },
+    { text: "Um treino seguro, curto e adaptado ao meu dia", value: "WISH_SAFE_WORKOUT" },
+    { text: "Orientação para saber quando descansar sem culpa", value: "WISH_REST_GUIDE" },
+    { text: "Mais confiança no meu corpo", value: "WISH_CONFIDENCE" },
+    { text: "Todas as alternativas acima", value: "WISH_ALL" }
+  ]);
+
+  // 12. Validação do Sistema
+  await createQuestion(prisma, introQuiz.id, 12, "Se existisse um sistema que avalia como você está hoje e te orienta se é dia de treinar, adaptar ou descansar, isso ajudaria você?", "MULTIPLE_CHOICE", [
+    { text: "Sim, muito", value: "HELP_YES_LOT" },
+    { text: "Sim, um pouco", value: "HELP_YES_LITTLE" },
+    { text: "Talvez", value: "HELP_MAYBE" },
+    { text: "Não", value: "HELP_NO" }
+  ]);
+
+  // 13. Frase de Identificação
+  await createQuestion(prisma, introQuiz.id, 13, "Qual frase mais representa você hoje?", "MULTIPLE_CHOICE", [
+    { text: "Tenho medo de fazer algo errado.", value: "PHRASE_FEAR" },
+    { text: "Quero me cuidar, mas não sei por onde começar.", value: "PHRASE_START" },
+    { text: "Estou cansada(o) de tanta informação confusa.", value: "PHRASE_CONFUSION" },
+    { text: "Quero fazer o melhor pelo meu corpo, com segurança.", value: "PHRASE_SAFETY" }
+  ]);
+
+  // 14. Crença no Exercício
+  await createQuestion(prisma, introQuiz.id, 14, "Você acredita que o exercício físico pode ajudar no seu tratamento e na sua qualidade de vida, se feito da forma certa?", "MULTIPLE_CHOICE", [
+    { text: "Sim", value: "BELIEF_YES" },
+    { text: "Talvez", value: "BELIEF_MAYBE" },
+    { text: "Nunca pensei nisso", value: "BELIEF_NEVER" }
+  ]);
+
+  // 15. Consultoria Individual
+  await createQuestion(prisma, introQuiz.id, 15, "Você gostaria de ter um acompanhamento individual com uma profissional especializada...?", "MULTIPLE_CHOICE", [
+    { text: "Sim, gostaria de saber mais", value: "CONSULT_YES" },
+    { text: "Talvez, dependendo do formato", value: "CONSULT_MAYBE" },
+    { text: "No momento, prefiro apenas o aplicativo", value: "CONSULT_NO" },
+    { text: "Não", value: "CONSULT_NEVER" }
+  ]);
+
+  console.log("✅ Avaliação Inicial (Re)criada com 15 perguntas reais.");
 
   // Check for exercises
   // Force delete to ensure links are updated
