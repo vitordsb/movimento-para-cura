@@ -17,7 +17,10 @@ export async function handleAsaasWebhook(req: Request, res: Response) {
   try {
     const payload: AsaasWebhookPayload = req.body;
 
-    console.log("[Asaas Webhook] Received event:", payload.event);
+    console.log("[Asaas Webhook] DEBUG INFO:");
+    console.log("Headers Content-Type:", req.headers["content-type"]);
+    console.log("Body:", JSON.stringify(req.body));
+    console.log("Payload Event:", payload.event);
 
     // Handle payment confirmation events
     if (payload.event === "PAYMENT_RECEIVED" || payload.event === "PAYMENT_CONFIRMED") {
