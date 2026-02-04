@@ -210,12 +210,11 @@ async function seed() {
   console.log("✅ Avaliação Inicial (Re)criada.");
 
   // Check for exercises
-  const exerciseCount = await prisma.exerciseTutorial.count();
-  console.log(`ℹ️ Exercícios no banco: ${exerciseCount}`);
+  // Force delete to ensure links are updated
+  await prisma.exerciseTutorial.deleteMany({});
 
-  if (exerciseCount === 0) {
-    console.log("ℹ️ Criando exercícios de exemplo...");
-    await prisma.exerciseTutorial.createMany({
+  console.log("ℹ️ Criando exercícios de exemplo...");
+  await prisma.exerciseTutorial.createMany({
       data: [
         {
           name: "Respiração Diafragmática",
@@ -237,8 +236,7 @@ async function seed() {
         }
       ]
     });
-    console.log("✅ Exercícios criados.");
-  }
+  console.log("✅ Exercícios criados.");
 
   console.log("✅ Seed finalizado.");
   await prisma.$disconnect();
