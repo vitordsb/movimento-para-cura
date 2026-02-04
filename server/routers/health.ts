@@ -35,7 +35,9 @@ export const healthRouter = router({
     .input(z.object({ limit: z.number().default(20) }))
     .query(async ({ input, ctx }) => {
       return await getRecentSymptoms(ctx.user.id, input.limit);
-      updateGoal: patientProcedure
+    }),
+
+  updateGoal: patientProcedure
         .input(z.object({ goalMl: z.number().min(500).max(5000) }))
         .mutation(async ({ input, ctx }) => {
           return await updateHydrationGoal(ctx.user.id, input.goalMl);
