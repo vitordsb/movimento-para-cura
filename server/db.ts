@@ -722,24 +722,21 @@ export async function addWaterIntake(userId: number, amountMl: number): Promise<
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Normalize to start of day
 
-  // Try to find existing record first
-  const existing = await prisma.dailyHydration.findUnique({
+  // Helper to find existing
+  const findExisting = async () => await prisma.dailyHydration.findFirst({
     where: {
-      userId_date: {
-        userId,
-        date: today,
+      userId,
+      date: {
+        equals: today,
       },
     },
   });
 
+  const existing = await findExisting();
+
   if (existing) {
     return await prisma.dailyHydration.update({
-      where: {
-        userId_date: {
-          userId,
-          date: today,
-        },
-      },
+      where: { id: existing.id },
       data: {
         currentIntakeMl: { increment: amountMl },
       },
@@ -757,19 +754,17 @@ export async function addWaterIntake(userId: number, amountMl: number): Promise<
       },
     });
   } catch (error: any) {
-    // If creaet fails due to unique constraint race condition, fallback to update
+    // If create fails due to unique constraint, it means it exists now
     if (error.code === "P2002") {
-      return await prisma.dailyHydration.update({
-        where: {
-          userId_date: {
-            userId,
-            date: today,
-          },
-        },
-        data: {
-          currentIntakeMl: { increment: amountMl },
-        },
-      });
+      const retryExisting = await findExisting();
+      if (retryExisting) {
+         return await prisma.dailyHydration.update({
+           where: { id: retryExisting.id },
+           data: {
+             currentIntakeMl: { increment: amountMl },
+           },
+         });
+       }
     }
     throw error;
   }
