@@ -209,9 +209,36 @@ async function seed() {
   }
   console.log("✅ Avaliação Inicial (Re)criada.");
 
-  // Create Check-in Scoring Configs (still relevant for history, though logic is now dynamic code-side)
-  // We can keep specific DB configs or rely on the code logic.
-  // Let's rely on code logic for flexibility as requested.
+  // Check for exercises
+  const exerciseCount = await prisma.exerciseTutorial.count();
+  console.log(`ℹ️ Exercícios no banco: ${exerciseCount}`);
+
+  if (exerciseCount === 0) {
+    console.log("ℹ️ Criando exercícios de exemplo...");
+    await prisma.exerciseTutorial.createMany({
+      data: [
+        {
+          name: "Respiração Diafragmática",
+          description: "Exercício de respiração para relaxamento.",
+          intensityLevel: "LIGHT",
+          videoLink: "https://www.youtube.com/playlist?list=PL3U7uv4DxYI1xHPCAzbFiV9RysgdWP_vK"
+        },
+        {
+          name: "Caminhada Estacionária",
+          description: "Simulação de caminhada no lugar.",
+          intensityLevel: "MODERATE",
+          videoLink: "https://www.youtube.com/playlist?list=PL3U7uv4DxYI1xHPCAzbFiV9RysgdWP_vK"
+        },
+        {
+          name: "Agachamento Livre",
+          description: "Fortalecimento de pernas.",
+          intensityLevel: "STRONG",
+          videoLink: "https://www.youtube.com/playlist?list=PL3U7uv4DxYI1xHPCAzbFiV9RysgdWP_vK"
+        }
+      ]
+    });
+    console.log("✅ Exercícios criados.");
+  }
 
   console.log("✅ Seed finalizado.");
   await prisma.$disconnect();
