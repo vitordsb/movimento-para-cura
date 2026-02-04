@@ -719,55 +719,51 @@ export async function deleteExerciseTutorialById(id: number): Promise<void> {
 // Health Tracking Methods
 
 export async function addWaterIntake(userId: number, amountMl: number): Promise<DailyHydration> {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Normalize to start of day
+  const dateStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const now = new Date();
 
-  // Helper to find existing
-  const findExisting = async () => await prisma.dailyHydration.findFirst({
+  // Use Raw SQL for atomic upsert (Insert on Duplicate Key Update)
+  // This bypasses Prisma's date object complexities and race conditions
+  await prisma.$executeRaw`
+    INSERT INTO daily_hydrations (userId, date, currentIntakeMl, dailyGoalMl, updatedAt)
+    VALUES (${userId}, ${dateStr}, ${amountMl}, 2000, ${now})
+    ON DUPLICATE KEY UPDATE
+    currentIntakeMl = currentIntakeMl + ${amountMl},
+    updatedAt = ${now}
+  `;
+
+  // Fetch the record to return it
+  // Try Prisma first
+  const record = await prisma.dailyHydration.findFirst({
     where: {
       userId,
       date: {
-        equals: today,
-      },
-    },
+        equals: new Date(dateStr)
+      }
+    }
   });
 
-  const existing = await findExisting();
+  if (record) return record;
 
-  if (existing) {
-    return await prisma.dailyHydration.update({
-      where: { id: existing.id },
-      data: {
-        currentIntakeMl: { increment: amountMl },
-      },
-    });
+  // Fallback: Fetch raw if Prisma date matching fails
+  const rawRecords = await prisma.$queryRaw<DailyHydration[]>`
+    SELECT id, userId, date, currentIntakeMl, dailyGoalMl, updatedAt
+    FROM daily_hydrations
+    WHERE userId = ${userId} AND date = ${dateStr}
+    LIMIT 1
+  `;
+
+  if (rawRecords[0]) {
+    // Manually map raw result to expected types if needed (Prisma usually handles it)
+    return {
+      ...rawRecords[0],
+      // Ensure date is a Date object
+      date: new Date(rawRecords[0].date),
+      updatedAt: new Date(rawRecords[0].updatedAt),
+    };
   }
 
-  // If not found, try create
-  try {
-    return await prisma.dailyHydration.create({
-      data: {
-        userId,
-        date: today,
-        currentIntakeMl: amountMl,
-        dailyGoalMl: 2000,
-      },
-    });
-  } catch (error: any) {
-    // If create fails due to unique constraint, it means it exists now
-    if (error.code === "P2002") {
-      const retryExisting = await findExisting();
-      if (retryExisting) {
-         return await prisma.dailyHydration.update({
-           where: { id: retryExisting.id },
-           data: {
-             currentIntakeMl: { increment: amountMl },
-           },
-         });
-       }
-    }
-    throw error;
-  }
+  throw new Error("Failed to retrieve hydration record after update");
 }
 
 export async function getTodayHydration(userId: number): Promise<DailyHydration | null> {
