@@ -152,8 +152,8 @@ export function HydrationWidget() {
           setIsDialogOpen(open);
         }}>
           <DialogTrigger asChild>
-            <Button variant="ghost" size="sm" className="w-full text-xs text-blue-600 hover:bg-blue-50 h-8">
-              <Settings2 className="w-3 h-3 mr-2" />
+            <Button variant="ghost" className="w-full text-sm font-medium text-blue-600 hover:bg-blue-50 h-14 mt-1 border border-blue-100/50">
+              <Settings2 className="w-4 h-4 mr-2" />
               Alterar meta diária ({goal}ml)
             </Button>
           </DialogTrigger>
